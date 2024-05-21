@@ -1,0 +1,12 @@
+bin/
+*.o
+*.tab.hpp
+*.tab.cpp
+*.yy.cpp
+*.output
+*.d
+ucc
+testsrc.c
+testout.s
+
+
