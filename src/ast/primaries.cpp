@@ -1,5 +1,5 @@
 #include <iostream>
-#include "constant.hpp"
+#include "primaries.hpp"
 
 void int_constant::generateIR() const {
 }
@@ -48,4 +48,14 @@ std::variant<long , double , char> char_constant::getval() const {
 	return val_;
 }
 
+
+void identifier::generateIR() const {
+}
+
+void identifier::printAST(int depth) const {
+    for(int i = 0 ; i < depth-1 ; i++){
+        std::cout << "│\t";
+    }
+    std::cout << "├────identifier: " << identifier_ << std::endl;
+}
 

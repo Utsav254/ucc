@@ -9,6 +9,7 @@ const char* err_to_string(errcode e) {
 		case errcode::FILE_IO: return "file I/O";
 		case errcode::SYNTAX: return "syntax";
 		case errcode::PARSING: return "parsing";
+		case errcode::INTERNAL: return "internal";
 		default: return "unknown";
 	}
 }	
@@ -30,6 +31,9 @@ void die(std::string message , errcode n) {
 		case errcode::PARSING:
 			std::cerr << "No abtract syntax tree was made...possible that root node == nullptr" << std::endl;
         	break;
+		case errcode::INTERNAL: 
+			std::cerr << message << std::endl;
+			break;
 		default: 
 			std::cerr << "Unknown" << std::endl;
 			break;

@@ -20,6 +20,9 @@ public:
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
+	node *clone() const override {
+		return new int_constant(*this);
+	}
 
 	std::variant<long , double , char> getval() const override;
 
@@ -35,6 +38,9 @@ public:
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
+	node *clone() const override {
+		return new float_constant(*this);
+	}
 
 	std::variant<long , double , char> getval() const override;
 
@@ -50,6 +56,9 @@ public:
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
+	node *clone() const override {
+		return new char_constant(*this);
+	}
 
 	std::variant<long , double , char> getval() const override;
 
@@ -57,5 +66,19 @@ private:
 	char val_;
 };
 
+class identifier : public node {
+public:
+	identifier(std::string id) : identifier_(id) {};
+	~identifier(){};
+
+	void generateIR() const override;
+	void printAST(int depth) const override;
+	node *clone() const override {
+		return new identifier(*this);
+	}
+
+private:
+	std::string identifier_;
+};
 
 #endif

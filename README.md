@@ -21,6 +21,6 @@ The IR would probably made using a base class called "block" from which there ar
 
 ### TODO:
     
-    1> make the error handling form the parser and lexer uniform...use the die function
-    2> clean up repo and do first commit
-    3> add some parsing grammar rules to yacc file...
+    1> add some parsing grammar rules to yacc file...
+    2> implement more sophisticated clean up system...when there is an error, there are random nodes which arent owned my any object and dont get freed
+

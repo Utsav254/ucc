@@ -11,6 +11,7 @@ enum class errcode {
 	FILE_IO,
 	SYNTAX,
 	PARSING,
+	INTERNAL,
 };
 
 
