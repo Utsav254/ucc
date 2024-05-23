@@ -15,4 +15,7 @@
 
 //arithmetic:
 #include "arithmetic/incr_decr_op.hpp"
+#include "arithmetic/rl_operators.hpp"
+#include "arithmetic/assign_op.hpp"
+
 #endif

@@ -31,6 +31,8 @@ void nodelist::printAST(int depth) const {
 			break;
 		case list_type::BLOCK : type = "block list";
 			break;
+		case list_type::DECL_SPEC : type = "declaration specifiers";
+			break;
 		default: type = "nodelist";
 	}
 

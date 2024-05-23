@@ -38,6 +38,7 @@ enum class list_type {
 	ARGUMENT_EXPR,
 	ENUMERATOR,
 	BLOCK,
+	DECL_SPEC,
 };
 
 class nodelist : public node {

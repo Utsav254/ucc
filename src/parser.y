@@ -37,7 +37,7 @@
 %type <Node> struct_declarator enum_specifier enumerator declarator direct_declarator pointer parameter_declaration
 %type <Node> identifier_list type_name abstract_declarator direct_abstract_declarator initializer initializer_list statement labeled_statement
 %type <Node> compound_statement expression_statement selection_statement iteration_statement jump_statement
-%type <Node> unary_operator assignment_operator storage_class_specifier block_item
+%type <Node> storage_class_specifier block_item
 
 
 %type <Nodes> declaration_list init_declarator_list translation_unit parameter_type_list parameter_list argument_expression_list enumerator_list
@@ -57,7 +57,7 @@ primary_expression
 	| INT_CONSTANT { $$ = new int_constant($1); }
 	| FLOAT_CONSTANT { $$ = new float_constant($1); }
 	| CHAR_CONSTANT { $$ = new char_constant($1); }
-	| STRING_LITERAL
+	| STRING_LITERAL {}
 	| '(' expression ')' {$$ = $2;}
 	;
 
@@ -74,7 +74,7 @@ postfix_expression
 	| postfix_expression INC_OP { $$ = new postfix_incr($1); }
 	| postfix_expression DEC_OP { $$ = new postfix_decr($1); }
 
-	| '(' type_name ')' '{' initializer_list '}' {/**/}
+	| '(' type_name ')' '{' initializer_list '}'
 	| '(' type_name ')' '{' initializer_list ',' '}'
 	;
 
@@ -84,108 +84,101 @@ argument_expression_list
 	;
 
 unary_expression
-	: postfix_expression {/*for e.g. x++*/}
+	: postfix_expression { $$ = $1; }
 	| INC_OP unary_expression { $$ = new unary_incr($2); }
 	| DEC_OP unary_expression { $$ = new unary_decr($2); }
-	| unary_operator cast_expression {/*arithmetic after casting... requires type checking*/}
 	| SIZEOF unary_expression {/*for e.g. sizeof(x) , sizeof(x++) etc*/}
 	| SIZEOF '(' type_name ')' {/*for e.g. sizeof(int)*/}
-	;
 
-unary_operator
-	: '&'
-	| '*'
-	| '+'
-	| '-'
-	| '~'
-	| '!'
+	| '&' cast_expression {/*arithmetic after casting... requires type checking*/}
+	| '*' cast_expression
+	| '+' cast_expression
+	| '-' cast_expression
+	| '~' cast_expression
+	| '!' cast_expression
 	;
 
 cast_expression
-	: unary_expression { $$ = $1; /*the order of the expressions will cascade down...*/ }
-	| '(' type_name ')' cast_expression { /*cast operation for e.g. (int) ... requires type checking and stuff*/}
+	: unary_expression { $$ = $1; }
+	| '(' type_name ')' cast_expression { }
 	;
 
 multiplicative_expression
 	: cast_expression { $$ = $1; }
-	| multiplicative_expression '*' cast_expression
-	| multiplicative_expression '/' cast_expression
-	| multiplicative_expression '%' cast_expression
+	| multiplicative_expression '*' cast_expression {$$ = new mul($1,$3);}
+	| multiplicative_expression '/' cast_expression {$$ = new divi($1,$3);}
+	| multiplicative_expression '%' cast_expression {$$ = new modulo($1,$3);}
 	;
 
 additive_expression
 	: multiplicative_expression { $$ = $1; }
-	| additive_expression '+' multiplicative_expression
-	| additive_expression '-' multiplicative_expression
+	| additive_expression '+' multiplicative_expression {$$ = new add($1,$3);}
+	| additive_expression '-' multiplicative_expression {$$ = new sub($1,$3);}
 	;
 
 shift_expression
 	: additive_expression { $$ = $1; }
-	| shift_expression LEFT_OP additive_expression
-	| shift_expression RIGHT_OP additive_expression
+	| shift_expression LEFT_OP additive_expression {$$ = new left_shift($1,$3);}
+	| shift_expression RIGHT_OP additive_expression {$$ = new right_shift($1,$3);}
 	;
 
 relational_expression
 	: shift_expression { $$ = $1; }
-	| relational_expression '<' shift_expression
-	| relational_expression '>' shift_expression
-	| relational_expression LE_OP shift_expression
-	| relational_expression GE_OP shift_expression
+	| relational_expression '<' shift_expression {$$ = new less_than($1,$3);}
+	| relational_expression '>' shift_expression {$$ = new greater_than($1,$3);}
+	| relational_expression LE_OP shift_expression {$$ = new less_eq_than($1,$3);}
+	| relational_expression GE_OP shift_expression {$$ = new greater_eq_than($1,$3);}
 	;
 
 equality_expression
 	: relational_expression { $$ = $1; }
-	| equality_expression EQ_OP relational_expression
-	| equality_expression NE_OP relational_expression
+	| equality_expression EQ_OP relational_expression {$$ = new equality($1,$3);}
+	| equality_expression NE_OP relational_expression {$$ = new not_equal($1,$3);}
 	;
 
 and_expression
 	: equality_expression { $$ = $1; }
-	| and_expression '&' equality_expression
+	| and_expression '&' equality_expression {$$ = new andop($1,$3);}
 	;
 
 exclusive_or_expression
 	: and_expression { $$ = $1; }
-	| exclusive_or_expression '^' and_expression
+	| exclusive_or_expression '^' and_expression {$$ = new xorop($1,$3);}
 	;
 
 inclusive_or_expression
 	: exclusive_or_expression { $$ = $1; }
-	| inclusive_or_expression '|' exclusive_or_expression
+	| inclusive_or_expression '|' exclusive_or_expression {$$ = new orop($1,$3);}
 	;
 
 logical_and_expression
 	: inclusive_or_expression { $$ = $1; }
-	| logical_and_expression AND_OP inclusive_or_expression
+	| logical_and_expression AND_OP inclusive_or_expression {$$ = new log_andop($1,$3);}
 	;
 
 logical_or_expression
 	: logical_and_expression { $$ = $1; }
-	| logical_or_expression OR_OP logical_and_expression
+	| logical_or_expression OR_OP logical_and_expression {$$ = new log_orop($1,$3);}
 	;
 
 conditional_expression
 	: logical_or_expression { $$ = $1; }
-	| logical_or_expression '?' expression ':' conditional_expression
+	| logical_or_expression '?' expression ':' conditional_expression {/*TODO*/}
 	;
 
 assignment_expression
 	: conditional_expression { $$ = $1; }
-	| unary_expression assignment_operator assignment_expression {/*x += 3*/}
-	;
-
-assignment_operator
-	: '='
-	| MUL_ASSIGN
-	| DIV_ASSIGN
-	| MOD_ASSIGN
-	| ADD_ASSIGN
-	| SUB_ASSIGN
-	| LEFT_ASSIGN
-	| RIGHT_ASSIGN
-	| AND_ASSIGN
-	| XOR_ASSIGN
-	| OR_ASSIGN
+	| unary_expression '=' assignment_expression { $$ = new assn_op($1 , $3 , assn::EQUALS); }
+	| unary_expression MUL_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::MUL); }
+	| unary_expression DIV_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::DIV); }
+	| unary_expression MOD_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::MOD); }
+	| unary_expression ADD_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::ADD); }
+	| unary_expression SUB_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::SUB); }
+	| unary_expression LEFT_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::LEFT); }
+	| unary_expression RIGHT_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::RIGHT); }
+	| unary_expression AND_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::AND); }
+	| unary_expression XOR_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::XOR); }
+	| unary_expression OR_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::OR); }
 	;
 
 expression
@@ -194,17 +187,17 @@ expression
 	;
 
 constant_expression
-	: conditional_expression
+	: conditional_expression { $$ = $1; }
 	;
 
 declaration
-	: declaration_specifiers ';' { /*this really shouldnt exist...*/ $$ = new declaration($1); }
+	: declaration_specifiers ';' { $$ = new declaration($1); }
 	| declaration_specifiers init_declarator_list ';' { $$ = new declaration_init_decl($1 , $2); }
 	;
 
 declaration_specifiers
-	: storage_class_specifier {}
-	| storage_class_specifier declaration_specifiers {/*can be followed be exactly one other thing... clearly requires some type checking*/}
+	: storage_class_specifier 
+	| storage_class_specifier declaration_specifiers 
 
 	| type_specifier { $$ = new declaration_specifier($1); }
 	| type_specifier declaration_specifiers { $$ = new declaration_specifier_double($1 , $2); }
