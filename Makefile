@@ -64,4 +64,7 @@ gdb: $(OUTPUT)
 run: $(OUTPUT)
 	./$(OUTPUT) -Stestsrc.c -otestout.s
 
+#test:
+#export ASAN_OPTIONS=abort_on_error=1
+
 

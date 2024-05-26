@@ -1,7 +1,7 @@
 #ifndef DECLARATOR_HPP
 #define DECLARATOR_HPP
 
-#include "node.hpp"
+#include "../node.hpp"
 
 class declarator : public node {
 public:

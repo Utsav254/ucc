@@ -37,10 +37,7 @@ public:
         : function_definition(declaration_specifiers, declarator, compound_statement), declaration_list_(declaration_list) {}
 
 	~function_definition_decl_list() {
-		if(declaration_specifiers_ != nullptr) delete declaration_specifiers_;
-		if(declarator_ != nullptr) delete declarator_;
 		if(declaration_list_ != nullptr) delete declaration_list_;
-		if(compound_statement_ != nullptr) delete compound_statement_;
 	}
 
 	void generateIR() const override;

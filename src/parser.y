@@ -32,16 +32,16 @@
 %type <Node> external_declaration function_definition primary_expression postfix_expression 
 %type <Node> unary_expression cast_expression multiplicative_expression additive_expression shift_expression relational_expression
 %type <Node> equality_expression and_expression exclusive_or_expression inclusive_or_expression logical_and_expression logical_or_expression
-%type <Node> conditional_expression assignment_expression expression constant_expression declaration declaration_specifiers
+%type <Node> conditional_expression assignment_expression constant_expression declaration 
 %type <Node> init_declarator type_specifier struct_declaration_list struct_declaration specifier_qualifier_list struct_declarator_list
 %type <Node> struct_declarator enum_specifier enumerator declarator direct_declarator pointer parameter_declaration
-%type <Node> identifier_list type_name abstract_declarator direct_abstract_declarator initializer initializer_list statement labeled_statement
+%type <Node> type_name abstract_declarator direct_abstract_declarator initializer initializer_list statement labeled_statement
 %type <Node> compound_statement expression_statement selection_statement iteration_statement jump_statement
-%type <Node> storage_class_specifier block_item
+%type <Node> storage_class_specifier block_item type_qualifier function_specifier
 
 
 %type <Nodes> declaration_list init_declarator_list translation_unit parameter_type_list parameter_list argument_expression_list enumerator_list
-%type <Nodes> block_item_list
+%type <Nodes> block_item_list declaration_specifiers expression identifier_list
 
 %type <number_int> INT_CONSTANT
 %type <number_float> FLOAT_CONSTANT
@@ -63,10 +63,9 @@ primary_expression
 
 postfix_expression
 	: primary_expression { $$ = $1; }
-	| postfix_expression '[' expression ']' { /*array indexing*/}
-
-	| postfix_expression '(' ')' {/*function call*/}
-	| postfix_expression '(' argument_expression_list ')' {/*function call with arguments*/}
+	| postfix_expression '[' expression ']' { $$ = new array_index($1 , $3); }
+	| postfix_expression '(' ')' { $$ = new function_call($1); }
+	| postfix_expression '(' argument_expression_list ')' { $$ = new function_call_arg($1 , $3); }
 
 	| postfix_expression '.' IDENTIFIER {/*member of struct*/}
 	| postfix_expression PTR_OP IDENTIFIER {/*member of struct pointer*/}
@@ -79,8 +78,8 @@ postfix_expression
 	;
 
 argument_expression_list
-	: assignment_expression {/*function call argument can be: add(x = 9 , y = 1)*/}
-	| argument_expression_list ',' assignment_expression { /*multiple function call arguments*/}
+	: assignment_expression { $$ = new nodelist($1 , list_type::ARGUMENT_EXPR); }
+	| argument_expression_list ',' assignment_expression { $1->pushback($3); $$ = $1; }
 	;
 
 unary_expression
@@ -163,7 +162,7 @@ logical_or_expression
 
 conditional_expression
 	: logical_or_expression { $$ = $1; }
-	| logical_or_expression '?' expression ':' conditional_expression {/*TODO*/}
+	| logical_or_expression '?' expression ':' conditional_expression { $$ = new conditional_expression($1 , $3 , $5); }
 	;
 
 assignment_expression
@@ -182,8 +181,8 @@ assignment_expression
 	;
 
 expression
-	: assignment_expression
-	| expression ',' assignment_expression { /*used in the case of multi var declaration: x = 0 , y , z = 1*/}
+	: assignment_expression { $$ = new nodelist($1 , list_type::EXPRESSION); }
+	| expression ',' assignment_expression { $1->pushback($3); $$ = $1; }
 	;
 
 constant_expression
@@ -196,17 +195,14 @@ declaration
 	;
 
 declaration_specifiers
-	: storage_class_specifier 
-	| storage_class_specifier declaration_specifiers 
-
-	| type_specifier { $$ = new declaration_specifier($1); }
-	| type_specifier declaration_specifiers { $$ = new declaration_specifier_double($1 , $2); }
-
-	| type_qualifier
-	| type_qualifier declaration_specifiers
-
-	| function_specifier {/*inline and stuff*/}
-	| function_specifier declaration_specifiers
+	: storage_class_specifier { $$ = new nodelist($1 , list_type::DECL_SPEC); }
+	| storage_class_specifier declaration_specifiers { $2->pushback($1); $$ = $2; }
+	| type_specifier { $$ = new nodelist($1 , list_type::DECL_SPEC); }
+	| type_specifier declaration_specifiers { $2->pushback($1); $$ = $2; }
+	| type_qualifier { $$ = new nodelist($1 , list_type::DECL_SPEC); }
+	| type_qualifier declaration_specifiers { $2->pushback($1); $$ = $2; }
+	| function_specifier { $$ = new nodelist($1 , list_type::DECL_SPEC); }
+	| function_specifier declaration_specifiers { $2->pushback($1); $$ = $2; }
 	;
 
 init_declarator_list
@@ -220,27 +216,27 @@ init_declarator
 	;
 
 storage_class_specifier
-	: TYPEDEF
-	| EXTERN
-	| STATIC
-	| AUTO
-	| REGISTER
+	: TYPEDEF { $$ = new storage_class_specifier(storage_specifiers::TYPEDEF); }
+	| EXTERN { $$ = new storage_class_specifier(storage_specifiers::EXTERN); }
+	| STATIC { $$ = new storage_class_specifier(storage_specifiers::STATIC); }
+	| AUTO { $$ = new storage_class_specifier(storage_specifiers::AUTO); }
+	| REGISTER { $$ = new storage_class_specifier(storage_specifiers::REGISTER); }
 	;
 
 type_specifier
-	: VOID { $$ = new type_specifier(types::VOID); }
-	| CHAR { $$ = new type_specifier(types::CHAR); }
-	| SHORT { $$ = new type_specifier(types::SHORT); }
-	| INT { $$ = new type_specifier(types::INT); }
-	| LONG { $$ = new type_specifier(types::LONG); }
-	| FLOAT { $$ = new type_specifier(types::FLOAT); }
-	| DOUBLE { $$ = new type_specifier(types::DOUBLE); }
-	| SIGNED { $$ = new type_specifier(types::SIGNED); }
-	| UNSIGNED { $$ = new type_specifier(types::UNSIGNED); }
+	: VOID { $$ = new type_specifier(type_specifiers::VOID); }
+	| CHAR { $$ = new type_specifier(type_specifiers::CHAR); }
+	| SHORT { $$ = new type_specifier(type_specifiers::SHORT); }
+	| INT { $$ = new type_specifier(type_specifiers::INT); }
+	| LONG { $$ = new type_specifier(type_specifiers::LONG); }
+	| FLOAT { $$ = new type_specifier(type_specifiers::FLOAT); }
+	| DOUBLE { $$ = new type_specifier(type_specifiers::DOUBLE); }
+	| SIGNED { $$ = new type_specifier(type_specifiers::SIGNED); }
+	| UNSIGNED { $$ = new type_specifier(type_specifiers::UNSIGNED); }
 
-	| struct_or_union_specifier {$$ = new type_specifier(types::STRUCT_OR_UNION); /*for now to be implemented later...will require derrived class*/}
-	| enum_specifier {$$ = new type_specifier(types::ENUM); /*implement later...will require derrived class*/}
-	| TYPE_NAME { $$ = new type_specifier(types::TYPEDEF_NAME); }
+	| struct_or_union_specifier {$$ = new type_specifier(type_specifiers::STRUCT_OR_UNION); }
+	| enum_specifier {$$ = new type_specifier(type_specifiers::ENUM); /*implement later...will require derrived class*/}
+	| TYPE_NAME { $$ = new type_specifier(type_specifiers::TYPEDEF_NAME); }
 	;
 
 struct_or_union_specifier
@@ -300,13 +296,13 @@ enumerator
 	;
 
 type_qualifier
-	: CONST
-	| RESTRICT
-	| VOLATILE
+	: CONST { $$ = new type_qualifier(type_qualifiers::CONST); }
+	| RESTRICT { $$ = new type_qualifier(type_qualifiers::RESTRICT); }
+	| VOLATILE { $$ = new type_qualifier(type_qualifiers::VOLATILE); }
 	;
 
 function_specifier
-	: INLINE
+	: INLINE { $$ = new function_specifier(function_specifiers::INLINE); }
 	;
 
 declarator
@@ -316,15 +312,12 @@ declarator
 
 
 direct_declarator
-	: IDENTIFIER { /*will probably need a direct_decl class in the future*/ $$ = new identifier(*$1); delete $1; }
-
-	| direct_declarator '[' assignment_expression ']'{/*arrays declaration with size*/}
-	| direct_declarator '[' ']' {/*in complete arry declaration*/}
-
+	: IDENTIFIER { $$ = new identifier(*$1); delete $1; }
+	| direct_declarator '[' assignment_expression ']'{ $$ = new array_definition_size($1 , $3); }
+	| direct_declarator '[' ']' { $$ = new array_definition($1); }
 	| direct_declarator '(' ')' { $$ = new function_declarator($1); }
 	| direct_declarator '(' parameter_type_list ')' { $$ = new function_declarator_param($1 , $3); }
-
-	| direct_declarator '(' identifier_list ')' {/*not sure what this is for yet*/}
+	| direct_declarator '(' identifier_list ')' { $$ = new function_declarator_id_list($1 , $3); }
 
 	| direct_declarator '[' '*' ']' { /*wierd c99 feature for vari array lengths in function forward declarations*/}
 	| '(' declarator ')' { /*function pointer stuff*/}
@@ -367,8 +360,8 @@ parameter_declaration
 	;
 
 identifier_list
-	: IDENTIFIER
-	| identifier_list ',' IDENTIFIER
+	: IDENTIFIER { $$ = new nodelist( new identifier(*$1) , list_type::IDENTIFIER); delete $1; }
+	| identifier_list ',' IDENTIFIER { $1->pushback(new identifier(*$3)); delete $3 ; $$ = $1; }
 	;
 
 type_name
@@ -424,22 +417,22 @@ designator
 	;
 
 statement
-	: labeled_statement
-	| compound_statement
-	| expression_statement
-	| selection_statement
-	| iteration_statement
-	| jump_statement
+	: labeled_statement { $$ = new statement($1 , statement_type::LABELLED); }
+	| compound_statement { $$ = new statement($1 , statement_type::COMPOUND); }
+	| expression_statement { $$ = new statement($1 , statement_type::EXPRESSION); }
+	| selection_statement { $$ = new statement($1 , statement_type::SELECTION); }
+	| iteration_statement { $$ = new statement($1 , statement_type::ITERATION); }
+	| jump_statement { $$ = new statement($1 , statement_type::JUMP); }
 	;
 
 labeled_statement
-	: IDENTIFIER ':' statement
-	| CASE constant_expression ':' statement
-	| DEFAULT ':' statement
+	: IDENTIFIER ':' statement { $$ = new goto_target(new identifier(*$1) , $3); delete $1; }
+	| CASE constant_expression ':' statement { $$ = new case_node($2 , $4); }
+	| DEFAULT ':' statement { $$ = new case_default_node($3); }
 	;
 
 compound_statement
-	: '{' '}' {/*empty_node ?*/}
+	: '{' '}' { $$ = new empty(); }
 	| '{' block_item_list '}' { $$ = $2; }
 	;
 
@@ -450,35 +443,37 @@ block_item_list
 
 block_item
 	: declaration { $$ = $1; }
-	| statement { /*encapsulates the body sections of if else functions and all that */}
+	| statement { $$ = $1; }
 	;
 
 expression_statement
-	: ';'
-	| expression ';'
+	: ';' { $$ = new empty(); }
+	| expression ';' { $$ = $1; }
 	;
 
 selection_statement
-	: IF '(' expression ')' statement
-	| IF '(' expression ')' statement ELSE statement
-	| SWITCH '(' expression ')' statement
+	: IF '(' expression ')' statement { $$ = new if_node( $3 , $5); }
+	| IF '(' expression ')' statement ELSE statement { $$ = new if_else_node($3 , $5 , $7); }
+	| SWITCH '(' expression ')' statement { $$ = new switch_node($3 , $5); }
 	;
 
 iteration_statement
-	: WHILE '(' expression ')' statement
-	| DO statement WHILE '(' expression ')' ';'
-	| FOR '(' expression_statement expression_statement ')' statement
-	| FOR '(' expression_statement expression_statement expression ')' statement
-	| FOR '(' declaration expression_statement ')' statement
-	| FOR '(' declaration expression_statement expression ')' statement
+	: WHILE '(' expression ')' statement { $$ = new while_node($3 , $5); }
+	| DO statement WHILE '(' expression ')' ';' { $$ = new do_while_node($2 , $5); }
+
+	| FOR '(' expression_statement expression_statement ')' statement {/*iterating var is externally declared*/ $$ = new for_node_ext($3 , $4 , $6); }
+	| FOR '(' expression_statement expression_statement expression ')' statement { $$ = new for_node_ext_mod($3 , $4 , $5 , $7); }
+
+	| FOR '(' declaration expression_statement ')' statement { /*no modifier specified*/ $$ = new for_node($3 , $4 , $6); }
+	| FOR '(' declaration expression_statement expression ')' statement {/*specifies the modifier*/ $$ = new for_node_mod($3 , $4 , $5 , $7); }
 	;
 
 jump_statement
-	: GOTO IDENTIFIER ';'
-	| CONTINUE ';'
-	| BREAK ';'
-	| RETURN ';'
-	| RETURN expression ';'
+	: GOTO IDENTIFIER ';' { $$ = new jump_statement_goto(jump_type::GOTO , new identifier(*$2)); delete $2; }
+	| CONTINUE ';' { $$ = new jump_statement(jump_type::CONTINUE); }
+	| BREAK ';' { $$ = new jump_statement(jump_type::BREAK); }
+	| RETURN ';' { $$ = new jump_statement(jump_type::RETURN); }
+	| RETURN expression ';' { $$ = new jump_statement_ret_expr(jump_type::RETURN , $2); }
 	;
 
 ROOT
@@ -495,10 +490,7 @@ external_declaration
 	;
 
 function_definition
-	: declaration_specifiers declarator declaration_list compound_statement {/*old feature of c 
-	from when all variables have to be known at the start of a function*/
-	$$ = new function_definition_decl_list($1 , $2 , $3 , $4); }
-
+	: declaration_specifiers declarator declaration_list compound_statement { $$ = new function_definition_decl_list($1 , $2 , $3 , $4); }
 	| declaration_specifiers declarator compound_statement { $$ = new function_definition($1 , $2 , $3); }
 	;
 

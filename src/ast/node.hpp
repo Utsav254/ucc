@@ -39,6 +39,8 @@ enum class list_type {
 	ENUMERATOR,
 	BLOCK,
 	DECL_SPEC,
+	EXPRESSION,
+	IDENTIFIER,
 };
 
 class nodelist : public node {

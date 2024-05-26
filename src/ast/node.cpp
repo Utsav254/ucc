@@ -33,6 +33,8 @@ void nodelist::printAST(int depth) const {
 			break;
 		case list_type::DECL_SPEC : type = "declaration specifiers";
 			break;
+		case list_type::EXPRESSION : type = "expression";
+			break;
 		default: type = "nodelist";
 	}
 

@@ -43,4 +43,24 @@ private:
 	nodelist *parameter_list_;
 };
 
+class function_declarator_id_list : public function_declarator {
+public:
+
+	function_declarator_id_list(node* direct_declarator, nodelist* identifier_list)
+        : function_declarator(direct_declarator) , identifier_list_(identifier_list) {}
+
+	~function_declarator_id_list() {
+		if(identifier_list_ != nullptr) delete identifier_list_;
+	}
+
+	void generateIR() const override;
+	void printAST(int depth) const override;
+	node *clone() const override {
+		return new function_declarator_id_list(*this);
+	}
+
+private:
+	nodelist *identifier_list_;
+};
+
 #endif

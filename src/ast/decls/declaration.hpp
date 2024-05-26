@@ -1,7 +1,7 @@
 #ifndef DECLARATION_HPP
 #define DECLARATION_HPP
 
-#include "node.hpp"
+#include "../node.hpp"
 
 class declaration : public node {
 public:

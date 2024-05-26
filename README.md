@@ -21,6 +21,12 @@ The IR would probably made using a base class called "block" from which there ar
 
 ### TODO:
     
-    1> add some parsing grammar rules to yacc file...
-    2> implement more sophisticated clean up system...when there is an error, there are random nodes which arent owned my any object and dont get freed
+    1> finish off the for loop codes
+    2> make a start on struct and enums
+    3> write testing script for parsing only? reuse test from langproc ?
+
+### LOW PRIORITY:
+
+    1> more sophisticated error handling on bad user input
+
 
