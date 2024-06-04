@@ -1,7 +1,7 @@
 %code requires{
 	//from: https://www.quut.com/c/ANSI-C-grammar-y-1999.html
-    #include "ast/ast.hpp"
-	#include "cli.hpp"
+    #include "ast.hpp"
+	#include "../cli.hpp"
 
     extern node *root_node;
     extern FILE *yyin;
@@ -33,15 +33,15 @@
 %type <Node> unary_expression cast_expression multiplicative_expression additive_expression shift_expression relational_expression
 %type <Node> equality_expression and_expression exclusive_or_expression inclusive_or_expression logical_and_expression logical_or_expression
 %type <Node> conditional_expression assignment_expression constant_expression declaration 
-%type <Node> init_declarator type_specifier struct_declaration_list struct_declaration specifier_qualifier_list struct_declarator_list
+%type <Node> init_declarator type_specifier struct_declaration 
 %type <Node> struct_declarator enum_specifier enumerator declarator direct_declarator pointer parameter_declaration
-%type <Node> type_name abstract_declarator direct_abstract_declarator initializer initializer_list statement labeled_statement
+%type <Node> type_name abstract_declarator direct_abstract_declarator initializer statement labeled_statement
 %type <Node> compound_statement expression_statement selection_statement iteration_statement jump_statement
-%type <Node> storage_class_specifier block_item type_qualifier function_specifier
-
+%type <Node> storage_class_specifier block_item type_qualifier function_specifier struct_or_union_specifier struct_or_union
 
 %type <Nodes> declaration_list init_declarator_list translation_unit parameter_type_list parameter_list argument_expression_list enumerator_list
-%type <Nodes> block_item_list declaration_specifiers expression identifier_list
+%type <Nodes> block_item_list declaration_specifiers expression identifier_list struct_declaration_list specifier_qualifier_list struct_declarator_list
+%type <Nodes> initializer_list
 
 %type <number_int> INT_CONSTANT
 %type <number_float> FLOAT_CONSTANT
@@ -233,48 +233,47 @@ type_specifier
 	| DOUBLE { $$ = new type_specifier(type_specifiers::DOUBLE); }
 	| SIGNED { $$ = new type_specifier(type_specifiers::SIGNED); }
 	| UNSIGNED { $$ = new type_specifier(type_specifiers::UNSIGNED); }
-
-	| struct_or_union_specifier {$$ = new type_specifier(type_specifiers::STRUCT_OR_UNION); }
-	| enum_specifier {$$ = new type_specifier(type_specifiers::ENUM); /*implement later...will require derrived class*/}
+	| struct_or_union_specifier { $$ = $1; }
+	| enum_specifier { $$ = $1; }
 	| TYPE_NAME { $$ = new type_specifier(type_specifiers::TYPEDEF_NAME); }
 	;
 
 struct_or_union_specifier
-	: struct_or_union IDENTIFIER '{' struct_declaration_list '}'
-	| struct_or_union '{' struct_declaration_list '}'
-	| struct_or_union IDENTIFIER
+	: struct_or_union IDENTIFIER '{' struct_declaration_list '}' { $$ = new struct_union_spec_id_decl($1 , new identifier(*$2) , $4); delete $2; }
+	| struct_or_union '{' struct_declaration_list '}' { $$ = new struct_union_spec_decl($1 , $3); }
+	| struct_or_union IDENTIFIER { $$ = new struct_union_spec_id($1 , new identifier(*$2)); delete $2; }
 	;
 
 struct_or_union
-	: STRUCT
-	| UNION
+	: STRUCT { $$ = new struct_union(structorunion::STRUCT); }
+	| UNION { $$ = new struct_union(structorunion::UNION); }
 	;
 
 struct_declaration_list
-	: struct_declaration
-	| struct_declaration_list struct_declaration
+	: struct_declaration { $$ = new nodelist($1 , list_type::STRUCT_DECLARATION); }
+	| struct_declaration_list struct_declaration { $1->pushback($2); $$ = $1; }
 	;
 
 struct_declaration
-	: specifier_qualifier_list struct_declarator_list ';'
+	: specifier_qualifier_list struct_declarator_list ';' { $$ = new struct_declaration($1 , $2); }
 	;
 
 specifier_qualifier_list
-	: type_specifier specifier_qualifier_list
-	| type_specifier
-	| type_qualifier specifier_qualifier_list
-	| type_qualifier
+	: type_specifier specifier_qualifier_list { $2->pushback($1); $$ = $2; }
+	| type_specifier { $$ = new nodelist($1 , list_type::SPEC_QUAL); }
+	| type_qualifier specifier_qualifier_list { $2->pushback($1); $$ = $2; }
+	| type_qualifier { $$ = new nodelist($1 , list_type::SPEC_QUAL); }
 	;
 
 struct_declarator_list
-	: struct_declarator
-	| struct_declarator_list ',' struct_declarator
+	: struct_declarator { $$ = new nodelist($1 , list_type::STRUCT_DECLARATOR); }
+	| struct_declarator_list ',' struct_declarator { $1->pushback($3); $$ = $1; }
 	;
 
 struct_declarator
-	: declarator
-	| ':' constant_expression
-	| declarator ':' constant_expression
+	: declarator { $$ = new struct_declarator($1); }
+	| ':' constant_expression { $$ = new struct_declarator_padding($2); }
+	| declarator ':' constant_expression { $$ = new struct_declarator_size($1 , $3); }
 	;
 
 enum_specifier
@@ -344,7 +343,7 @@ type_qualifier_list
 
 parameter_type_list
 	: parameter_list { $$ = $1; }
-	| parameter_list ',' ELLIPSIS {/*variadic functions ... low priority feature*/}
+	| parameter_list ',' ELLIPSIS { $1->pushback( new ellipsis()); $$ = $1; }
 	;
 
 parameter_list
@@ -461,11 +460,10 @@ iteration_statement
 	: WHILE '(' expression ')' statement { $$ = new while_node($3 , $5); }
 	| DO statement WHILE '(' expression ')' ';' { $$ = new do_while_node($2 , $5); }
 
-	| FOR '(' expression_statement expression_statement ')' statement {/*iterating var is externally declared*/ $$ = new for_node_ext($3 , $4 , $6); }
+	| FOR '(' expression_statement expression_statement ')' statement { $$ = new for_node_ext($3 , $4 , $6); }
 	| FOR '(' expression_statement expression_statement expression ')' statement { $$ = new for_node_ext_mod($3 , $4 , $5 , $7); }
-
-	| FOR '(' declaration expression_statement ')' statement { /*no modifier specified*/ $$ = new for_node($3 , $4 , $6); }
-	| FOR '(' declaration expression_statement expression ')' statement {/*specifies the modifier*/ $$ = new for_node_mod($3 , $4 , $5 , $7); }
+	| FOR '(' declaration expression_statement ')' statement { $$ = new for_node($3 , $4 , $6); }
+	| FOR '(' declaration expression_statement expression ')' statement { $$ = new for_node_mod($3 , $4 , $5 , $7); }
 	;
 
 jump_statement

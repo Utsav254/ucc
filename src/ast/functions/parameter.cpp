@@ -25,3 +25,18 @@ void parameter_full_decl::printAST(int depth) const {
 	if(declaration_specifier_ != nullptr) declaration_specifier_->printAST(depth + 1);
 	if(declarator_ != nullptr) declarator_->printAST(depth + 1);
 }
+
+void variadic_parameter::generateIR() const {
+
+}
+
+void variadic_parameter::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
+	}
+	std::cout << "├────variadic_parameter" << std::endl;
+	if(parameter_list_ != nullptr) parameter_list_->printAST(depth + 1);
+}
+
+
+

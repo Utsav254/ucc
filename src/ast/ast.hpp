@@ -34,4 +34,8 @@
 #include "statements/while.hpp"
 #include "statements/for.hpp"
 
+//struct and unions:
+#include "struct_union/struct_union.hpp"
+#include "struct_union/struct_union_decls.hpp"
+
 #endif

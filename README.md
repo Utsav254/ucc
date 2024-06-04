@@ -20,10 +20,9 @@ The IR would probably made using a base class called "block" from which there ar
 
 
 ### TODO:
-    
-    1> finish off the for loop codes
-    2> make a start on struct and enums
-    3> write testing script for parsing only? reuse test from langproc ?
+
+    1> get rid of nodelist type enum and make them separate classes
+    2> write testing script for parsing only? reuse test from langproc ?
 
 ### LOW PRIORITY:
 

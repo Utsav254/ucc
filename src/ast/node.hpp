@@ -41,6 +41,9 @@ enum class list_type {
 	DECL_SPEC,
 	EXPRESSION,
 	IDENTIFIER,
+	STRUCT_DECLARATION,
+	STRUCT_DECLARATOR,
+	SPEC_QUAL,
 };
 
 class nodelist : public node {

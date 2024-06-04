@@ -39,4 +39,22 @@ private:
 	node *declarator_;
 };
 
+class variadic_parameter : public node {
+public:
+	variadic_parameter(nodelist *parameter_list):
+		parameter_list_(parameter_list){}
+	~variadic_parameter() {
+		if(parameter_list_ != nullptr) delete parameter_list_;
+	}
+	node *clone() const override {
+		return new variadic_parameter(*this);
+	}
+
+	void generateIR() const override;
+	void printAST(int depth) const override;
+
+private:
+	nodelist *parameter_list_;
+};
+
 #endif
