@@ -14,9 +14,6 @@ class jump_statement : public node {
 public:
 	jump_statement(jump_type j) : j_(j){}
 	~jump_statement() {}
-	node *clone() const override {
-		return new jump_statement(*this);
-	}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -33,9 +30,6 @@ public:
 
 	~jump_statement_goto() {
 		if(identifier_ != nullptr) delete identifier_;
-	}
-	node *clone() const override {
-		return new jump_statement_goto(*this);
 	}
 
 	void generateIR() const override;
@@ -54,9 +48,6 @@ public:
 	~jump_statement_ret_expr() {
 		if(expression_ != nullptr) delete expression_;
 	}
-	node *clone() const override {
-		return new jump_statement_ret_expr(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -72,9 +63,6 @@ public:
 	~goto_target() {
 		if(identifier_ != nullptr) delete identifier_;
 		if(statement_ != nullptr) delete statement_;
-	}
-	node *clone() const override {
-		return new goto_target(*this);
 	}
 
 	void generateIR() const override;

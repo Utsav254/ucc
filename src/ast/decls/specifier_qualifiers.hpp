@@ -19,9 +19,6 @@ public:
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
-	node *clone() const override {
-		return new type_specifier(*this);
-	}
 
 private:
 	type_specifiers t_;
@@ -39,9 +36,6 @@ class type_qualifier : public node {
 public:
 	type_qualifier(type_qualifiers q) : q_(q) {}
 	~type_qualifier(){};
-	node *clone() const override {
-		return new type_qualifier(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -64,9 +58,6 @@ class storage_class_specifier : public node {
 public:
 	storage_class_specifier(storage_specifiers s) : s_(s) {}
 	~storage_class_specifier(){};
-	node *clone() const override {
-		return new storage_class_specifier(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -85,9 +76,6 @@ class function_specifier : public node {
 public:
 	function_specifier(function_specifiers f) : f_(f) {}
 	~function_specifier(){};
-	node *clone() const override {
-		return new function_specifier(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;

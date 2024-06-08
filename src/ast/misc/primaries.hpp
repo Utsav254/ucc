@@ -2,7 +2,7 @@
 #define CONSTANT_HPP
 
 #include <variant>
-#include "node.hpp"
+#include "../node.hpp"
 
 //base class for constant types
 class constant : public node {
@@ -20,9 +20,6 @@ public:
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
-	node *clone() const override {
-		return new int_constant(*this);
-	}
 
 	std::variant<long , double , char> getval() const override;
 
@@ -38,9 +35,6 @@ public:
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
-	node *clone() const override {
-		return new float_constant(*this);
-	}
 
 	std::variant<long , double , char> getval() const override;
 
@@ -56,9 +50,6 @@ public:
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
-	node *clone() const override {
-		return new char_constant(*this);
-	}
 
 	std::variant<long , double , char> getval() const override;
 
@@ -73,12 +64,10 @@ public:
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
-	node *clone() const override {
-		return new identifier(*this);
-	}
 
 private:
 	std::string identifier_;
 };
 
 #endif
+

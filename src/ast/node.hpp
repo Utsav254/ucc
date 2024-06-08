@@ -12,8 +12,6 @@ public:
 
 	virtual void generateIR() const = 0;
 	virtual void printAST(int depth) const = 0;
-	virtual node *clone() const = 0;
-
 	//will possibly need the following:
 	//getsize()
 	//gettype()
@@ -61,10 +59,6 @@ public:
 	//remaning override member functions
 	void generateIR() const override;
 	void printAST(int depth) const override;
-
-	node *clone() const override {
-		return new nodelist(*this);
-	}
 
 	//derrived specific function:
 	void pushback(node *next);

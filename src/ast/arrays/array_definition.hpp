@@ -9,9 +9,6 @@ public:
 	~array_definition() {
 		if(direct_declarator_ != nullptr) delete direct_declarator_;
 	}
-	node *clone() const override {
-		return new array_definition(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -28,9 +25,6 @@ public:
 
 	~array_definition_size() {
 		if(assignment_expression_ != nullptr) delete assignment_expression_;
-	}
-	node *clone() const override {
-		return new array_definition(*this);
 	}
 
 	void generateIR() const override;

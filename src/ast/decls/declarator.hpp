@@ -9,9 +9,6 @@ public:
 	~declarator() {
 		if(direct_declarator_ != nullptr) delete direct_declarator_;
 	}
-	node *clone() const override {
-		return new declarator(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -27,9 +24,6 @@ public:
 	~declarator_pointer() {
 		if(pointer_ != nullptr) delete pointer_;
 	}
-	node *clone() const override {
-		return new declarator_pointer(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -43,9 +37,6 @@ public:
 	init_declarator(node *declarator) : declarator_(declarator) {}
 	~init_declarator() {
 		if(declarator_ != nullptr) delete declarator_;
-	}
-	node *clone() const override {
-		return new init_declarator(*this);
 	}
 
 	void generateIR() const override;
@@ -62,9 +53,6 @@ public:
 
 	~init_declarator_ini() {
 		if(initialiser_ != nullptr) delete initialiser_;
-	}
-	node *clone() const override {
-		return new init_declarator_ini(*this);
 	}
 
 	void generateIR() const override;

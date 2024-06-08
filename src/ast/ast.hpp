@@ -2,8 +2,10 @@
 #define AST_HPP
 
 #include "node.hpp"
-#include "primaries.hpp"
-#include "misc.hpp"
+
+//miscellanious stuff
+#include "misc/primaries.hpp"
+#include "misc/misc.hpp"
 
 //declaration stuff
 #include "decls/specifier_qualifiers.hpp"
@@ -37,5 +39,12 @@
 //struct and unions:
 #include "struct_union/struct_union.hpp"
 #include "struct_union/struct_union_decls.hpp"
+#include "struct_union/struct_union_member.hpp"
+
+enum class node_type{
+
+};
+
 
 #endif
+

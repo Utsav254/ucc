@@ -21,9 +21,6 @@ public:
 		if(unary_expression_ != nullptr) delete unary_expression_;
 		if(assignment_expression_ != nullptr) delete assignment_expression_;
 	}
-	node *clone() const override {
-		return new assn_op(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;

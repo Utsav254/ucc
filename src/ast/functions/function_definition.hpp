@@ -19,9 +19,6 @@ public:
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
-	node *clone() const override {
-		return new function_definition(*this);
-	}
 
 protected:
     node *declaration_specifiers_;
@@ -42,9 +39,6 @@ public:
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
-	node *clone() const override {
-		return new function_definition_decl_list(*this);
-	}
 
 private:
 	nodelist *declaration_list_;

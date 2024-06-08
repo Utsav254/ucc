@@ -9,9 +9,6 @@ public:
 	~declaration() {
 		if(declaration_specifier_ != nullptr) delete declaration_specifier_;
 	}
-	node *clone() const override {
-		return new declaration(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -27,9 +24,6 @@ public:
 		init_decl_list_(init_decl_list) {}
 	~declaration_init_decl() {
 		if(init_decl_list_ != nullptr) delete init_decl_list_;
-	}
-	node *clone() const override {
-		return new declaration_init_decl(*this);
 	}
 
 	void generateIR() const override;

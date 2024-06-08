@@ -1,10 +1,13 @@
 %code requires{
 	//from: https://www.quut.com/c/ANSI-C-grammar-y-1999.html
     #include "ast.hpp"
-	#include "../cli.hpp"
+	#include "../error.hpp"
+	#include <string>
 
     extern node *root_node;
     extern FILE *yyin;
+	extern std::string errpading;
+
     int yylex(void);
     void yyerror(const char *);
 }
@@ -28,6 +31,7 @@
 %token CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE CONST VOLATILE VOID
 %token STRUCT UNION ENUM ELLIPSIS
 %token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
+
 
 %type <Node> external_declaration function_definition primary_expression postfix_expression 
 %type <Node> unary_expression cast_expression multiplicative_expression additive_expression shift_expression relational_expression
@@ -67,8 +71,8 @@ postfix_expression
 	| postfix_expression '(' ')' { $$ = new function_call($1); }
 	| postfix_expression '(' argument_expression_list ')' { $$ = new function_call_arg($1 , $3); }
 
-	| postfix_expression '.' IDENTIFIER {/*member of struct*/}
-	| postfix_expression PTR_OP IDENTIFIER {/*member of struct pointer*/}
+	| postfix_expression '.' IDENTIFIER { $$ = new dot_member_op($1 , new identifier(*$3)); delete $3; }
+	| postfix_expression PTR_OP IDENTIFIER {$$ = new ptr_member_op($1 , new identifier(*$3)); delete $3; }
 
 	| postfix_expression INC_OP { $$ = new postfix_incr($1); }
 	| postfix_expression DEC_OP { $$ = new postfix_decr($1); }
@@ -86,8 +90,8 @@ unary_expression
 	: postfix_expression { $$ = $1; }
 	| INC_OP unary_expression { $$ = new unary_incr($2); }
 	| DEC_OP unary_expression { $$ = new unary_decr($2); }
-	| SIZEOF unary_expression {/*for e.g. sizeof(x) , sizeof(x++) etc*/}
-	| SIZEOF '(' type_name ')' {/*for e.g. sizeof(int)*/}
+	| SIZEOF unary_expression { $$ = new sizeof_node($2); }
+	| SIZEOF '(' type_name ')' { $$ = new sizeof_node_type($3); }
 
 	| '&' cast_expression {/*arithmetic after casting... requires type checking*/}
 	| '*' cast_expression
@@ -309,7 +313,6 @@ declarator
 	| direct_declarator { $$ = new declarator($1); }
 	;
 
-
 direct_declarator
 	: IDENTIFIER { $$ = new identifier(*$1); delete $1; }
 	| direct_declarator '[' assignment_expression ']'{ $$ = new array_definition_size($1 , $3); }
@@ -500,14 +503,9 @@ declaration_list
 
 %%
 
-extern char yytext[];
-extern int err_column;
-extern std::string err_string;
-
 void yyerror(char const *s) {
-	//avoid the unused param warning
 	s = s;
-	die(err_string , errcode::SYNTAX);
+	die(errpadding , errcode::SYNTAX);
 }
 
 

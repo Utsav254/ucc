@@ -11,9 +11,6 @@ public:
 		if(spec_qual_list_ != nullptr) delete spec_qual_list_;
 		if(struct_decl_list_ != nullptr) delete struct_decl_list_;
 	}
-	node *clone() const override {
-		return new struct_declaration(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -28,9 +25,6 @@ public:
 	struct_declarator(node *declarator) : declarator_(declarator){}	
 	~struct_declarator() {
 		if(declarator_ != nullptr) delete declarator_;
-	}
-	node *clone() const override {
-		return new struct_declarator(*this);
 	}
 
 	void generateIR() const override;
@@ -47,9 +41,6 @@ public:
 	~struct_declarator_size() {
 		if(constant_expr_ != nullptr) delete constant_expr_;
 	}
-	node *clone() const override {
-		return new struct_declarator_size(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -63,9 +54,6 @@ public:
 	struct_declarator_padding(node *constant_expr) : constant_expr_(constant_expr){}
 	~struct_declarator_padding() {
 		if(constant_expr_ != nullptr) delete constant_expr_;
-	}
-	node *clone() const override {
-		return new struct_declarator_padding(*this);
 	}
 
 	void generateIR() const override;

@@ -1,8 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include "cli.hpp"
+#include "error.hpp"
 #include "interm_repr/interm_repr.hpp"
 #include "ast/node.hpp"
+
+CLI_args cliargs;
+
 
 node *root_node;
 IR *ir;
@@ -10,15 +14,15 @@ IR *ir;
 int main(int argc , char **argv) {
 
 	//process cli args as required
-	CLI_args args = parse_command_line_arguments(argc , argv);
+	cliargs = parse_command_line_arguments(argc , argv);
 
 	//open the file and emit assembly
-	std::ofstream output(args.outputpath , std::ios::trunc);
+	std::ofstream output(cliargs.outputpath , std::ios::trunc);
 	if(!output.is_open()) die("Failed to open output file" , errcode::FILE_IO);
 
-	node *ast_root = parseAST(args.sourcepath);
+	node *ast_root = parseAST(cliargs.sourcepath);
 
-	if(ast_root == nullptr) die("Fatal parsing failure: parse tree does not exist" , errcode::PARSING);
+	if(ast_root == nullptr) die("Fatal parsing failure: parse tree does not exist" , errcode::INTERNAL);
 
 	//temporarily print the ast to the console for debugging use
 	root_node->printAST(1);

@@ -12,9 +12,6 @@ public:
 		if(condition_expr_ != nullptr) delete condition_expr_;
 		if(statement_ != nullptr) delete statement_;
 	}
-	node *clone() const override {
-		return new for_node(*this);
-	}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -31,9 +28,6 @@ public:
 		for_node(declaration , condition_expr , statement) , modifying_expr_(modifying_expr){}
 	~for_node_mod() {
 		if(modifying_expr_ != nullptr) delete modifying_expr_;
-	}
-	node *clone() const override {
-		return new for_node_mod(*this);
 	}
 
 	void generateIR() const override;
@@ -54,9 +48,6 @@ public:
 		if(condition_expr_ != nullptr) delete condition_expr_;
 		if(statement_ != nullptr) delete statement_;
 	}
-	node *clone() const override {
-		return new for_node_ext(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -73,9 +64,6 @@ public:
 		for_node_ext(initial_expr , condition_expr , statement) , modifying_expr_(modifying_expr){}
 	~for_node_ext_mod() {
 		if(modifying_expr_ != nullptr) delete modifying_expr_;
-	}
-	node *clone() const override {
-		return new for_node_ext_mod(*this);
 	}
 
 	void generateIR() const override;

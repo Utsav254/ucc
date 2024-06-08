@@ -9,9 +9,7 @@ public:
 	~function_call() {
 		if(postfix_expr_ != nullptr) delete postfix_expr_;
 	}
-	node *clone() const override {
-		return new function_call(*this);
-	}
+
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
@@ -26,9 +24,6 @@ public:
 		argument_expr_list_(argument_expr_list) {}
 	~function_call_arg() {
 		if(argument_expr_list_ != nullptr) delete argument_expr_list_;
-	}
-	node *clone() const override {
-		return new function_call_arg(*this);
 	}
 
 	void generateIR() const override;

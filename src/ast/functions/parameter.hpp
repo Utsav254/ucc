@@ -9,9 +9,6 @@ public:
 	~parameter_decl() {
 		if(declaration_specifier_ != nullptr) delete declaration_specifier_;
 	}
-	node *clone() const override {
-		return new parameter_decl(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -28,9 +25,6 @@ public:
 	~parameter_full_decl() {
 		if(declarator_ != nullptr) delete declarator_;
 	}
-	node *clone() const override {
-		return new parameter_full_decl(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -45,9 +39,6 @@ public:
 		parameter_list_(parameter_list){}
 	~variadic_parameter() {
 		if(parameter_list_ != nullptr) delete parameter_list_;
-	}
-	node *clone() const override {
-		return new variadic_parameter(*this);
 	}
 
 	void generateIR() const override;

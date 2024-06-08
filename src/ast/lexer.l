@@ -6,8 +6,13 @@
 
 	#include "parser.tab.hpp"
 	#include <stdio.h>
+	#include <string.h>
+	#include <string>
 
-	void count(void);
+	int errlineno = 0;
+	std::string errpadding;
+
+	void count(const char *s);
 	int check_type(void);
 	char extract_char_value(const char *text);
 %}
@@ -25,125 +30,118 @@ IS  ((u|U)|(u|U)?(l|L|ll|LL)|(l|L|ll|LL)(u|U))
 "/*"			{  }
 "//"[^\n]*      { /* consume //-comment */ }
 
-"auto"			{ count(); return(AUTO); }
-"break"			{ count(); return(BREAK); }
-"case"			{ count(); return(CASE); }
-"char"			{ count(); return(CHAR); }
-"const"			{ count(); return(CONST); }
-"continue"		{ count(); return(CONTINUE); }
-"default"		{ count(); return(DEFAULT); }
-"do"			{ count(); return(DO); }
-"double"		{ count(); return(DOUBLE); }
-"else"			{ count(); return(ELSE); }
-"enum"			{ count(); return(ENUM); }
-"extern"		{ count(); return(EXTERN); }
-"float"			{ count(); return(FLOAT); }
-"for"			{ count(); return(FOR); }
-"goto"			{ count(); return(GOTO); }
-"if"			{ count(); return(IF); }
-"inline"		{ count(); return(INLINE); }
-"int"			{ count(); return(INT); }
-"long"			{ count(); return(LONG); }
-"register"		{ count(); return(REGISTER); }
-"restrict"		{ count(); return(RESTRICT); }
-"return"		{ count(); return(RETURN); }
-"short"			{ count(); return(SHORT); }
-"signed"		{ count(); return(SIGNED); }
-"sizeof"		{ count(); return(SIZEOF); }
-"static"		{ count(); return(STATIC); }
-"struct"		{ count(); return(STRUCT); }
-"switch"		{ count(); return(SWITCH); }
-"typedef"		{ count(); return(TYPEDEF); }
-"union"			{ count(); return(UNION); }
-"unsigned"		{ count(); return(UNSIGNED); }
-"void"			{ count(); return(VOID); }
-"volatile"		{ count(); return(VOLATILE); }
-"while"			{ count(); return(WHILE); }
+"auto"			{ count(yytext); return(AUTO); }
+"break"			{ count(yytext); return(BREAK); }
+"case"			{ count(yytext); return(CASE); }
+"char"			{ count(yytext); return(CHAR); }
+"const"			{ count(yytext); return(CONST); }
+"continue"		{ count(yytext); return(CONTINUE); }
+"default"		{ count(yytext); return(DEFAULT); }
+"do"			{ count(yytext); return(DO); }
+"double"		{ count(yytext); return(DOUBLE); }
+"else"			{ count(yytext); return(ELSE); }
+"enum"			{ count(yytext); return(ENUM); }
+"extern"		{ count(yytext); return(EXTERN); }
+"float"			{ count(yytext); return(FLOAT); }
+"for"			{ count(yytext); return(FOR); }
+"goto"			{ count(yytext); return(GOTO); }
+"if"			{ count(yytext); return(IF); }
+"inline"		{ count(yytext); return(INLINE); }
+"int"			{ count(yytext); return(INT); }
+"long"			{ count(yytext); return(LONG); }
+"register"		{ count(yytext); return(REGISTER); }
+"restrict"		{ count(yytext); return(RESTRICT); }
+"return"		{ count(yytext); return(RETURN); }
+"short"			{ count(yytext); return(SHORT); }
+"signed"		{ count(yytext); return(SIGNED); }
+"sizeof"		{ count(yytext); return(SIZEOF); }
+"static"		{ count(yytext); return(STATIC); }
+"struct"		{ count(yytext); return(STRUCT); }
+"switch"		{ count(yytext); return(SWITCH); }
+"typedef"		{ count(yytext); return(TYPEDEF); }
+"union"			{ count(yytext); return(UNION); }
+"unsigned"		{ count(yytext); return(UNSIGNED); }
+"void"			{ count(yytext); return(VOID); }
+"volatile"		{ count(yytext); return(VOLATILE); }
+"while"			{ count(yytext); return(WHILE); }
 
-{L}({L}|{D})*		{yylval.string = new std::string(yytext) ; count(); return(check_type()); }
+{L}({L}|{D})*		{count(yytext); yylval.string = new std::string(yytext); return(check_type()); }
 
-0[xX]{H}+{IS}?		{count(); yylval.number_int = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
-0[0-7]*{IS}?		{count(); yylval.number_int = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
-[1-9]{D}*{IS}?		{count(); yylval.number_int = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
-L?'(\\.|[^\\'\n])+'	{count(); yylval.letter_char = extract_char_value(yytext); return(CHAR_CONSTANT); }
+0[xX]{H}+{IS}?		{count(yytext); yylval.number_int = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
+0[0-7]*{IS}?		{count(yytext); yylval.number_int = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
+[1-9]{D}*{IS}?		{count(yytext); yylval.number_int = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
+L?'(\\.|[^\\'\n])+'	{count(yytext); yylval.letter_char = extract_char_value(yytext); return(CHAR_CONSTANT); }
 
-{D}+{E}{FS}?		{count(); yylval.number_float = strtod(yytext, NULL); return(FLOAT_CONSTANT); }
-{D}*"."{D}+{E}?{FS}?	{count(); yylval.number_float = strtod(yytext , NULL); return(FLOAT_CONSTANT); }
-{D}+"."{D}*{E}?{FS}?	{count(); yylval.number_float = strtod(yytext , NULL); return(FLOAT_CONSTANT); }
+{D}+{E}{FS}?		{count(yytext); yylval.number_float = strtod(yytext, NULL); return(FLOAT_CONSTANT); }
+{D}*"."{D}+{E}?{FS}?	{count(yytext); yylval.number_float = strtod(yytext , NULL); return(FLOAT_CONSTANT); }
+{D}+"."{D}*{E}?{FS}?	{count(yytext); yylval.number_float = strtod(yytext , NULL); return(FLOAT_CONSTANT); }
 
-0[xX]{H}+{P}{FS}?	{ count(); die("does not handle hex floating constants yet" , errcode::SYNTAX);}
-0[xX]{H}*"."{H}+{P}?{FS}?     { count(); die("does not handle hex floating constants yet" , errcode::SYNTAX);}
-0[xX]{H}+"."{H}*{P}?{FS}?     { count(); die("does not handle hex floating constants yet" , errcode::SYNTAX);}
+0[xX]{H}+{P}{FS}?	{ count(yytext); die("does not handle hex floating constants yet" , errcode::SYNTAX);}
+0[xX]{H}*"."{H}+{P}?{FS}?     { count(yytext); die("does not handle hex floating constants yet" , errcode::SYNTAX);}
+0[xX]{H}+"."{H}*{P}?{FS}?     { count(yytext); die("does not handle hex floating constants yet" , errcode::SYNTAX);}
 
 
-L?\"(\\.|[^\\"\n])*\"	{ count(); /*yet to handle string literals...*/ return(STRING_LITERAL); }
+\"(\\.|[^\\"\n])*\"	{ count(yytext); /*yet to handle string literals...*/ return(STRING_LITERAL); }
 
-"..."			{ count(); return(ELLIPSIS); }
-">>="			{ count(); return(RIGHT_ASSIGN); }
-"<<="			{ count(); return(LEFT_ASSIGN); }
-"+="			{ count(); return(ADD_ASSIGN); }
-"-="			{ count(); return(SUB_ASSIGN); }
-"*="			{ count(); return(MUL_ASSIGN); }
-"/="			{ count(); return(DIV_ASSIGN); }
-"%="			{ count(); return(MOD_ASSIGN); }
-"&="			{ count(); return(AND_ASSIGN); }
-"^="			{ count(); return(XOR_ASSIGN); }
-"|="			{ count(); return(OR_ASSIGN); }
-">>"			{ count(); return(RIGHT_OP); }
-"<<"			{ count(); return(LEFT_OP); }
-"++"			{ count(); return(INC_OP); }
-"--"			{ count(); return(DEC_OP); }
-"->"			{ count(); return(PTR_OP); }
-"&&"			{ count(); return(AND_OP); }
-"||"			{ count(); return(OR_OP); }
-"<="			{ count(); return(LE_OP); }
-">="			{ count(); return(GE_OP); }
-"=="			{ count(); return(EQ_OP); }
-"!="			{ count(); return(NE_OP); }
-";"				{ count(); return(';'); }
-("{"|"<%")		{ count(); return('{'); }
-("}"|"%>")		{ count(); return('}'); }
-","				{ count(); return(','); }
-":"				{ count(); return(':'); }
-"="				{ count(); return('='); }
-"("				{ count(); return('('); }
-")"				{ count(); return(')'); }
-("["|"<:")		{ count(); return('['); }
-("]"|":>")		{ count(); return(']'); }
-"."				{ count(); return('.'); }
-"&"				{ count(); return('&'); }
-"!"				{ count(); return('!'); }
-"~"				{ count(); return('~'); }
-"-"				{ count(); return('-'); }
-"+"				{ count(); return('+'); }
-"*"				{ count(); return('*'); }
-"/"				{ count(); return('/'); }
-"%"				{ count(); return('%'); }
-"<"				{ count(); return('<'); }
-">"				{ count(); return('>'); }
-"^"				{ count(); return('^'); }
-"|"				{ count(); return('|'); }
-"?"				{ count(); return('?'); }
-
-[ \t\v\n\f]		{ count(); }
-.				{  }
+"..."			{ count(yytext); return(ELLIPSIS); }
+">>="			{ count(yytext); return(RIGHT_ASSIGN); }
+"<<="			{ count(yytext); return(LEFT_ASSIGN); }
+"+="			{ count(yytext); return(ADD_ASSIGN); }
+"-="			{ count(yytext); return(SUB_ASSIGN); }
+"*="			{ count(yytext); return(MUL_ASSIGN); }
+"/="			{ count(yytext); return(DIV_ASSIGN); }
+"%="			{ count(yytext); return(MOD_ASSIGN); }
+"&="			{ count(yytext); return(AND_ASSIGN); }
+"^="			{ count(yytext); return(XOR_ASSIGN); }
+"|="			{ count(yytext); return(OR_ASSIGN); }
+">>"			{ count(yytext); return(RIGHT_OP); }
+"<<"			{ count(yytext); return(LEFT_OP); }
+"++"			{ count(yytext); return(INC_OP); }
+"--"			{ count(yytext); return(DEC_OP); }
+"->"			{ count(yytext); return(PTR_OP); }
+"&&"			{ count(yytext); return(AND_OP); }
+"||"			{ count(yytext); return(OR_OP); }
+"<="			{ count(yytext); return(LE_OP); }
+">="			{ count(yytext); return(GE_OP); }
+"=="			{ count(yytext); return(EQ_OP); }
+"!="			{ count(yytext); return(NE_OP); }
+";"				{ count(yytext); return(';'); }
+("{"|"<%")		{ count(yytext); return('{'); }
+("}"|"%>")		{ count(yytext); return('}'); }
+","				{ count(yytext); return(','); }
+":"				{ count(yytext); return(':'); }
+"="				{ count(yytext); return('='); }
+"("				{ count(yytext); return('('); }
+")"				{ count(yytext); return(')'); }
+("["|"<:")		{ count(yytext); return('['); }
+("]"|":>")		{ count(yytext); return(']'); }
+"."				{ count(yytext); return('.'); }
+"&"				{ count(yytext); return('&'); }
+"!"				{ count(yytext); return('!'); }
+"~"				{ count(yytext); return('~'); }
+"-"				{ count(yytext); return('-'); }
+"+"				{ count(yytext); return('+'); }
+"*"				{ count(yytext); return('*'); }
+"/"				{ count(yytext); return('/'); }
+"%"				{ count(yytext); return('%'); }
+"<"				{ count(yytext); return('<'); }
+">"				{ count(yytext); return('>'); }
+"^"				{ count(yytext); return('^'); }
+"|"				{ count(yytext); return('|'); }
+"?"				{ count(yytext); return('?'); }
+"\n"			{ errlineno++; errpadding = "";}
+"\t"			{ errpadding += "\t";}
+[\v\f]			{ count(yytext); }
+.				{ count(yytext); }
 
 %%
 
 
-int err_column = 0;
-std::string err_string;
-
-void count(void) {
-	int i;
-	for (i = 0; yytext[i] != '\0'; i++) {
-
-		if (yytext[i] == '\n') err_column = 0;
-		else if (yytext[i] == '\t') err_column += 4 - (err_column % 4);
-		else err_column++;
+void count(const char *s) {
+	int len = (int)strlen(s);
+	for (int i = 0 ; i < len ; i++){
+		errpadding += " ";
 	}
-
-	err_string = yytext;	
 }
 
 int check_type(void) {

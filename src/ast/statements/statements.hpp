@@ -18,9 +18,6 @@ public:
 	~statement() {
 		if(statement_ != nullptr) delete statement_;
 	}
-	node *clone() const override {
-		return new statement(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;

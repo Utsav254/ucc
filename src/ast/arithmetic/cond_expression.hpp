@@ -15,9 +15,6 @@ public:
 		if(expression_ != nullptr) delete expression_;
 		if(conditional_expr_ != nullptr) delete conditional_expr_;
 	}
-	node *clone() const override {
-		return new conditional_expression(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;

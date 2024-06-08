@@ -12,9 +12,6 @@ class struct_union : public node {
 public:
 	struct_union(structorunion su) : su_(su){}
 	~struct_union(){}
-	node *clone() const override {
-		return new struct_union(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -44,9 +41,6 @@ public:
 	~struct_union_spec_id() {
 		if(identifier_ != nullptr) delete identifier_;
 	}
-	node *clone() const override {
-		return new struct_union_spec_id(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -63,9 +57,6 @@ public:
 	~struct_union_spec_id_decl() {
 		if(struct_decl_list_ != nullptr) delete struct_decl_list_;
 	}
-	node *clone() const override {
-		return new struct_union_spec_id_decl(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -80,9 +71,6 @@ public:
 		struct_union_spec(struct_union) , struct_decl_list_(struct_decl_list){}
 	~struct_union_spec_decl() {
 		if(struct_decl_list_ != nullptr) delete struct_decl_list_;
-	}
-	node *clone() const override {
-		return new struct_union_spec_decl(*this);
 	}
 
 	void generateIR() const override;

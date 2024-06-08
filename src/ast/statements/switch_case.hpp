@@ -12,9 +12,6 @@ public:
 		if(expression_ != nullptr) delete expression_;
 		if(statement_ != nullptr) delete statement_;
 	}
-	node *clone() const override {
-		return new switch_node(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -30,9 +27,6 @@ public:
 	~case_default_node() {
 		if(statement_ != nullptr) delete statement_;
 	}
-	node *clone() const override {
-		return new case_default_node(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -47,9 +41,6 @@ public:
 		case_default_node(statement) , constant_expression_(constant_expression){}
 	~case_node() {
 		if(constant_expression_ != nullptr) delete constant_expression_;
-	}
-	node *clone() const override {
-		return new case_node(*this);
 	}
 
 	void generateIR() const override;

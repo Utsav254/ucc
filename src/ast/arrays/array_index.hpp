@@ -10,9 +10,6 @@ public:
 		if(postfix_expr_ != nullptr) delete postfix_expr_;
 		if(expr_ != nullptr) delete expr_;
 	}
-	node *clone() const override {
-		return new array_index(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;

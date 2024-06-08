@@ -11,9 +11,6 @@ public:
 		if(expression_ != nullptr) delete expression_;
 		if(statement_ != nullptr) delete statement_;
 	}
-	node *clone() const override {
-		return new while_node(*this);
-	}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -30,9 +27,6 @@ public:
 	~do_while_node() {
 		if(expression_ != nullptr) delete expression_;
 		if(statement_ != nullptr) delete statement_;
-	}
-	node *clone() const override {
-		return new do_while_node(*this);
 	}
 
 	void generateIR() const override;
