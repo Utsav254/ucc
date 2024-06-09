@@ -17,21 +17,6 @@ protected:
 	node *direct_declarator_;
 };
 
-class declarator_pointer : public declarator {
-public:
-	declarator_pointer(node *pointer , node *direct_declarator) : 
-		declarator(direct_declarator) , pointer_(pointer) {}
-	~declarator_pointer() {
-		if(pointer_ != nullptr) delete pointer_;
-	}
-
-	void generateIR() const override;
-	void printAST(int depth) const override;
-
-private:
-	node *pointer_;
-};
-
 class init_declarator : public node {
 public:
 	init_declarator(node *declarator) : declarator_(declarator) {}

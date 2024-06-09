@@ -49,7 +49,7 @@ void declaration_init_decl::printAST(int depth) const {
 	for(int i = 0 ; i < depth-1 ; i++){
 		std::cout << "│\t";
 	}
-	std::cout << "├────declaration" << std::endl;
+	std::cout << "├────declaration_init_decl" << std::endl;
 	if(declaration_specifier_ != nullptr) declaration_specifier_->printAST(depth + 1);
 	if(init_decl_list_ != nullptr) init_decl_list_->printAST(depth + 1);
 }

@@ -20,6 +20,8 @@ public:
 		return typeid(*this);
 	}
 
+	virtual void track_typedef_decl() const {return;}
+
 	//will possibly need the following:
 	//getsize()
 	//gettype()

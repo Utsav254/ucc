@@ -3,21 +3,16 @@
 
 #include "../node.hpp"
 
-enum class structorunion {
-	STRUCT,
-	UNION,
-};
-
 class struct_union : public node {
 public:
-	struct_union(structorunion su) : su_(su){}
+	struct_union(std::string su) : su_(su){}
 	~struct_union(){}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	structorunion su_;
+	std::string su_;
 };
 
 //purely virtual class

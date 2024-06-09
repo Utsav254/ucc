@@ -3,90 +3,73 @@
 
 #include "../node.hpp"
 
-enum class type_specifiers {
-	VOID, CHAR, INT, FLOAT, DOUBLE, 
-	SHORT, LONG,  
-	SIGNED, UNSIGNED,
-	STRUCT_OR_UNION,
-	ENUM,
-	TYPEDEF_NAME,
-};
 
 class type_specifier : public node {
 public:
-	type_specifier(type_specifiers t) : t_(t) {}
+	type_specifier(std::string type_spec) : type_spec_(type_spec) {}
 	~type_specifier(){};
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	type_specifiers t_;
+	std::string type_spec_;
 };
 
 //-----------------------------------------
 
-enum class type_qualifiers {
-	CONST,
-	RESTRICT,
-	VOLATILE,
-};
-
 class type_qualifier : public node {
 public:
-	type_qualifier(type_qualifiers q) : q_(q) {}
+	type_qualifier(std::string type_qual) : type_qual_(type_qual) {}
 	~type_qualifier(){};
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	type_qualifiers q_;
+	std::string type_qual_;
 };
 
 //----------------------------------------
 
-enum class storage_specifiers {
-	TYPEDEF,
-	EXTERN,
-	STATIC,
-	AUTO,
-	REGISTER,
-};
-
 class storage_class_specifier : public node {
 public:
-	storage_class_specifier(storage_specifiers s) : s_(s) {}
+	storage_class_specifier(std::string storage_class_spec) : storage_class_spec_(storage_class_spec) {}
 	~storage_class_specifier(){};
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	storage_specifiers s_;
+	std::string storage_class_spec_;
 };
 
 //---------------------------------------
 
-enum class function_specifiers {
-	INLINE,
-};
-
 class function_specifier : public node {
 public:
-	function_specifier(function_specifiers f) : f_(f) {}
+	function_specifier(std::string function_spec) : function_spec_(function_spec) {}
 	~function_specifier(){};
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	function_specifiers f_;
+	std::string function_spec_;
 };
+
+//---------------------------------------
 
 class declaration_specifiers : public nodelist {
 public:
 	declaration_specifiers(node *first_node) : nodelist(first_node){}
+
+	void printAST(int depth) const override;
+};
+
+class  type_qualifier_list: public nodelist {
+public:
+	type_qualifier_list(node *first_node) : nodelist(first_node){}
 
 	void printAST(int depth) const override;
 };

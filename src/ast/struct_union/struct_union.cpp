@@ -9,16 +9,7 @@ void struct_union::printAST(int depth) const {
 	for(int i = 0 ; i < depth-1 ; i++){
 		std::cout << "│\t";
 	}
-
-	std::string type;
-	switch(su_) {
-		case structorunion::STRUCT: type = "struct";
-			break;
-		case structorunion::UNION: type = "union";
-			break;
-		default: type = "unknown";
-	}
-	std::cout << "├────struct_union: " << type << std::endl;
+	std::cout << "├────struct_union: " << su_ << std::endl;
 }
 
 void struct_union_spec_id::generateIR() const {

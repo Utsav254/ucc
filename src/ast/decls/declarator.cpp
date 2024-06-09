@@ -13,19 +13,6 @@ void declarator::printAST(int depth) const {
 	if(direct_declarator_ != nullptr) direct_declarator_->printAST(depth + 1);
 }
 
-void declarator_pointer::generateIR() const {
-
-}
-
-void declarator_pointer::printAST(int depth) const {
- for(int i = 0 ; i < depth-1 ; i++){
-        std::cout << "│\t";
-    }
-    std::cout << "├────declarator pointer" << std::endl;
-	if(direct_declarator_ != nullptr) direct_declarator_->printAST(depth + 1);
-	if(pointer_ != nullptr) pointer_->printAST(depth + 1);
-}
-
 void init_declarator::generateIR() const {
 
 }

@@ -5,6 +5,7 @@
 	extern "C" int fileno(FILE *stream);
 
 	#include "parser.tab.hpp"
+	#include "../context.hpp"
 	#include <stdio.h>
 	#include <string.h>
 	#include <string>
@@ -13,7 +14,7 @@
 	std::string errpadding;
 
 	void count(const char *s);
-	int check_type(void);
+	int check_type(const char *s);
 	char extract_char_value(const char *text);
 %}
 
@@ -65,12 +66,12 @@ IS  ((u|U)|(u|U)?(l|L|ll|LL)|(l|L|ll|LL)(u|U))
 "volatile"		{ count(yytext); return(VOLATILE); }
 "while"			{ count(yytext); return(WHILE); }
 
-{L}({L}|{D})*		{count(yytext); yylval.string = new std::string(yytext); return(check_type()); }
+{L}({L}|{D})*		{count(yytext); yylval.string = new std::string(yytext); return(check_type(yytext)); }
 
 0[xX]{H}+{IS}?		{count(yytext); yylval.number_int = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
 0[0-7]*{IS}?		{count(yytext); yylval.number_int = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
 [1-9]{D}*{IS}?		{count(yytext); yylval.number_int = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
-L?'(\\.|[^\\'\n])+'	{count(yytext); yylval.letter_char = extract_char_value(yytext); return(CHAR_CONSTANT); }
+L?'(\\.|[^\\'\n])+'	{/*yet to handle while chars*/count(yytext); yylval.letter_char = extract_char_value(yytext); return(CHAR_CONSTANT); }
 
 {D}+{E}{FS}?		{count(yytext); yylval.number_float = strtod(yytext, NULL); return(FLOAT_CONSTANT); }
 {D}*"."{D}+{E}?{FS}?	{count(yytext); yylval.number_float = strtod(yytext , NULL); return(FLOAT_CONSTANT); }
@@ -81,7 +82,7 @@ L?'(\\.|[^\\'\n])+'	{count(yytext); yylval.letter_char = extract_char_value(yyte
 0[xX]{H}+"."{H}*{P}?{FS}?     { count(yytext); die("does not handle hex floating constants yet" , errcode::SYNTAX);}
 
 
-\"(\\.|[^\\"\n])*\"	{ count(yytext); /*yet to handle string literals...*/ return(STRING_LITERAL); }
+L?\"(\\.|[^\\"\n])*\"	{/*yet to handle wide chars*/ count(yytext); yylval.string = new std::string(yytext); return(STRING_LITERAL); }
 
 "..."			{ count(yytext); return(ELLIPSIS); }
 ">>="			{ count(yytext); return(RIGHT_ASSIGN); }
@@ -144,16 +145,9 @@ void count(const char *s) {
 	}
 }
 
-int check_type(void) {
-
-	/*used for checking if an identifier is a potential type a list of types must be mainted and chechked against...
-
-	used for wierd things like enumerate or typedefinitons
-
-	of-course these types also have a scope...
-	*/
-
-	return IDENTIFIER;
+int check_type(const char *s) {
+	if(! ctx->is_member_types_tmp(std::string(s))) return IDENTIFIER;
+	else return TYPE_NAME;
 }
 
 
@@ -201,5 +195,4 @@ char extract_char_value(const char *text) {
 
     return value;
 }
-
 

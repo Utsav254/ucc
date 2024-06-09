@@ -12,7 +12,7 @@ void int_constant::printAST(int depth) const {
     std::cout << "├────integer: " << val_ << std::endl;
 }
 
-std::variant<long , double , char> int_constant::getval() const {
+std::variant<long , double , char , std::string> int_constant::getval() const {
 	return val_;
 }
 
@@ -28,7 +28,7 @@ void float_constant::printAST(int depth) const {
     std::cout << "├────float: " << val_ << std::endl;
 }
 
-std::variant<long , double , char> float_constant::getval() const {
+std::variant<long , double , char , std::string> float_constant::getval() const {
 	return val_;
 }
 
@@ -44,7 +44,22 @@ void char_constant::printAST(int depth) const {
     std::cout << "├────char(int): " << (int)val_ << std::endl;
 }
 
-std::variant<long , double , char> char_constant::getval() const {
+std::variant<long , double , char , std::string> char_constant::getval() const {
+	return val_;
+}
+
+void string_literal::generateIR() const {
+
+}
+
+void string_literal::printAST(int depth) const {
+    for(int i = 0 ; i < depth-1 ; i++){
+        std::cout << "│\t";
+    }
+    std::cout << "├────string_literal: " << val_ << std::endl;
+}
+
+std::variant <long , double , char , std::string>string_literal::getval() const {
 	return val_;
 }
 

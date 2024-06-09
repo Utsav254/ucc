@@ -11,6 +11,7 @@
 #include "decls/specifier_qualifiers.hpp"
 #include "decls/declarator.hpp"
 #include "decls/declaration.hpp"
+#include "decls/pointer.hpp"
 
 //functions:
 #include "functions/function_definition.hpp"

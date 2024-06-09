@@ -9,7 +9,7 @@ class constant : public node {
 public:
 	virtual ~constant(){}
 	//function to retreive the value of the constant
-    virtual std::variant<long , double , char> getval() const = 0;
+    virtual std::variant<long , double , char , std::string> getval() const = 0;
 };
 
 //integer constant class
@@ -21,7 +21,7 @@ public:
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
-	std::variant<long , double , char> getval() const override;
+	std::variant<long , double , char , std::string> getval() const override;
 
 private:
 	long val_;
@@ -36,7 +36,7 @@ public:
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
-	std::variant<long , double , char> getval() const override;
+	std::variant<long , double , char , std::string> getval() const override;
 
 private:
 	double val_;
@@ -51,10 +51,24 @@ public:
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
-	std::variant<long , double , char> getval() const override;
+	std::variant<long , double , char , std::string> getval() const override;
 
 private:
 	char val_;
+};
+
+class string_literal : public constant {
+public:
+	string_literal(std::string val) : val_(val){}
+	~string_literal() = default;
+
+	void generateIR() const override;
+	void printAST(int depth) const override;
+
+	std::variant <long , double , char , std::string> getval() const override;
+
+private:
+	std::string val_;
 };
 
 class identifier : public node {

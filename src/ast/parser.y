@@ -38,19 +38,19 @@
 %type <Node> equality_expression and_expression exclusive_or_expression inclusive_or_expression logical_and_expression logical_or_expression
 %type <Node> conditional_expression assignment_expression constant_expression declaration 
 %type <Node> init_declarator type_specifier struct_declaration 
-%type <Node> struct_declarator enum_specifier enumerator declarator direct_declarator pointer parameter_declaration
+%type <Node> struct_declarator enum_specifier enumerator declarator direct_declarator parameter_declaration
 %type <Node> type_name abstract_declarator direct_abstract_declarator initializer statement labeled_statement
 %type <Node> compound_statement expression_statement selection_statement iteration_statement jump_statement
 %type <Node> storage_class_specifier block_item type_qualifier function_specifier struct_or_union_specifier struct_or_union
 
 %type <Nodes> declaration_list init_declarator_list translation_unit parameter_type_list parameter_list argument_expression_list enumerator_list
 %type <Nodes> block_item_list declaration_specifiers expression identifier_list struct_declaration_list specifier_qualifier_list struct_declarator_list
-%type <Nodes> initializer_list
+%type <Nodes> initializer_list type_qualifier_list pointer
 
 %type <number_int> INT_CONSTANT
 %type <number_float> FLOAT_CONSTANT
 %type <letter_char> CHAR_CONSTANT
-%type <string> IDENTIFIER STRING_LITERAL
+%type <string> IDENTIFIER STRING_LITERAL TYPE_NAME
 
 %start ROOT
 
@@ -61,7 +61,7 @@ primary_expression
 	| INT_CONSTANT { $$ = new int_constant($1); }
 	| FLOAT_CONSTANT { $$ = new float_constant($1); }
 	| CHAR_CONSTANT { $$ = new char_constant($1); }
-	| STRING_LITERAL {}
+	| STRING_LITERAL { $$ = new string_literal(*$1); delete $1;}
 	| '(' expression ')' {$$ = $2;}
 	;
 
@@ -220,26 +220,26 @@ init_declarator
 	;
 
 storage_class_specifier
-	: TYPEDEF { $$ = new storage_class_specifier(storage_specifiers::TYPEDEF); }
-	| EXTERN { $$ = new storage_class_specifier(storage_specifiers::EXTERN); }
-	| STATIC { $$ = new storage_class_specifier(storage_specifiers::STATIC); }
-	| AUTO { $$ = new storage_class_specifier(storage_specifiers::AUTO); }
-	| REGISTER { $$ = new storage_class_specifier(storage_specifiers::REGISTER); }
+	: TYPEDEF { $$ = new storage_class_specifier("TYPEDEF"); }
+	| EXTERN { $$ = new storage_class_specifier("EXTERN"); }
+	| STATIC { $$ = new storage_class_specifier("STATIC"); }
+	| AUTO { $$ = new storage_class_specifier("AUTO"); }
+	| REGISTER { $$ = new storage_class_specifier("REGISTER"); }
 	;
 
 type_specifier
-	: VOID { $$ = new type_specifier(type_specifiers::VOID); }
-	| CHAR { $$ = new type_specifier(type_specifiers::CHAR); }
-	| SHORT { $$ = new type_specifier(type_specifiers::SHORT); }
-	| INT { $$ = new type_specifier(type_specifiers::INT); }
-	| LONG { $$ = new type_specifier(type_specifiers::LONG); }
-	| FLOAT { $$ = new type_specifier(type_specifiers::FLOAT); }
-	| DOUBLE { $$ = new type_specifier(type_specifiers::DOUBLE); }
-	| SIGNED { $$ = new type_specifier(type_specifiers::SIGNED); }
-	| UNSIGNED { $$ = new type_specifier(type_specifiers::UNSIGNED); }
+	: VOID { $$ = new type_specifier("VOID"); }
+	| CHAR { $$ = new type_specifier("CHAR"); }
+	| SHORT { $$ = new type_specifier("SHORT"); }
+	| INT { $$ = new type_specifier("INT"); }
+	| LONG { $$ = new type_specifier("LONG"); }
+	| FLOAT { $$ = new type_specifier("FLOAT"); }
+	| DOUBLE { $$ = new type_specifier("DOUBLE"); }
+	| SIGNED { $$ = new type_specifier("SIGNED"); }
+	| UNSIGNED { $$ = new type_specifier("UNSIGNED"); }
 	| struct_or_union_specifier { $$ = $1; }
 	| enum_specifier { $$ = $1; }
-	| TYPE_NAME { $$ = new type_specifier(type_specifiers::TYPEDEF_NAME); }
+	| TYPE_NAME { $$ = new type_specifier(*$1); delete $1; }
 	;
 
 struct_or_union_specifier
@@ -249,8 +249,8 @@ struct_or_union_specifier
 	;
 
 struct_or_union
-	: STRUCT { $$ = new struct_union(structorunion::STRUCT); }
-	| UNION { $$ = new struct_union(structorunion::UNION); }
+	: STRUCT { $$ = new struct_union("struct"); }
+	| UNION { $$ = new struct_union("union"); }
 	;
 
 struct_declaration_list
@@ -299,13 +299,13 @@ enumerator
 	;
 
 type_qualifier
-	: CONST { $$ = new type_qualifier(type_qualifiers::CONST); }
-	| RESTRICT { $$ = new type_qualifier(type_qualifiers::RESTRICT); }
-	| VOLATILE { $$ = new type_qualifier(type_qualifiers::VOLATILE); }
+	: CONST { $$ = new type_qualifier("CONST"); }
+	| RESTRICT { $$ = new type_qualifier("RESTRICT"); }
+	| VOLATILE { $$ = new type_qualifier("VOLATILE"); }
 	;
 
 function_specifier
-	: INLINE { $$ = new function_specifier(function_specifiers::INLINE); }
+	: INLINE { $$ = new function_specifier("INLINE"); }
 	;
 
 declarator
@@ -332,15 +332,16 @@ direct_declarator
 	;
 
 pointer
-	: '*'
+	: '*' { $$ = new pointer_list( new pointer() ); }
+	| '*' pointer { $2->pushback( new pointer() ); $$ = $2; }
+
 	| '*' type_qualifier_list
-	| '*' pointer
 	| '*' type_qualifier_list pointer
 	;
 
 type_qualifier_list
-	: type_qualifier
-	| type_qualifier_list type_qualifier
+	: type_qualifier { $$ = new type_qualifier_list($1); }
+	| type_qualifier_list type_qualifier { $1->pushback($2);  $$ = $1; }
 	;
 
 
