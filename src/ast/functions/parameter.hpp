@@ -33,6 +33,14 @@ private:
 	node *declarator_;
 };
 
+class parameter_list : public nodelist {
+public:
+	parameter_list (node *first_node) : nodelist(first_node){}
+
+	void generateIR() const override;
+	void printAST(int depth) const override;
+};
+
 class variadic_parameter : public node {
 public:
 	variadic_parameter(nodelist *parameter_list):

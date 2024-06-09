@@ -84,5 +84,12 @@ private:
 	function_specifiers f_;
 };
 
+class declaration_specifiers : public nodelist {
+public:
+	declaration_specifiers(node *first_node) : nodelist(first_node){}
+
+	void printAST(int depth) const override;
+};
+
 #endif
 

@@ -1,45 +1,155 @@
 #include "assign_op.hpp"
 #include <iostream>
 
-void assn_op::generateIR() const {
+void equals_assn::generateIR() const {
 
 }
 
-void assn_op::printAST(int depth) const {
-
-    for(int i = 0 ; i < depth-1 ; i++){
-        std::cout << "│\t";
-    }
-	std::string type;
-	switch(a_) {
-		case assn::EQUALS : type = "equal";
-			break;
-		case assn::MUL : type = "mul";
-			break;
-		case assn::DIV : type = "div";
-			break;
-		case assn::MOD : type = "mod";
-			break;
-		case assn::ADD : type = "add";
-			break;
-		case assn::SUB : type = "sub";
-			break;
-		case assn::LEFT : type = "left";
-			break;
-		case assn::RIGHT : type = "right";
-			break;
-		case assn::AND : type = "and";
-			break;
-		case assn::XOR : type = "xor";
-			break;
-		case assn::OR : type = "or";
-			break;
-		default : type = "unknown";
+void equals_assn::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
 	}
-
-    std::cout << "├───" << type << " assign" << std::endl;
+	std::cout << "├────equals_assign"<< std::endl;
 	if(unary_expression_ != nullptr) unary_expression_->printAST(depth + 1);
 	if(assignment_expression_ != nullptr) assignment_expression_->printAST(depth + 1);
+}
+
+void mul_assn::generateIR() const {
 
 }
 
+void mul_assn::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
+	}
+	std::cout << "├────mul_assign"<< std::endl;
+	if(unary_expression_ != nullptr) unary_expression_->printAST(depth + 1);
+	if(assignment_expression_ != nullptr) assignment_expression_->printAST(depth + 1);
+}
+
+void div_assn::generateIR() const {
+
+}
+
+void div_assn::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
+	}
+	std::cout << "├────div_assign"<< std::endl;
+	if(unary_expression_ != nullptr) unary_expression_->printAST(depth + 1);
+	if(assignment_expression_ != nullptr) assignment_expression_->printAST(depth + 1);
+}
+
+void modu_assn::generateIR() const {
+
+}
+
+void modu_assn::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
+	}
+	std::cout << "├────modulo_assign"<< std::endl;
+	if(unary_expression_ != nullptr) unary_expression_->printAST(depth + 1);
+	if(assignment_expression_ != nullptr) assignment_expression_->printAST(depth + 1);
+}
+
+void add_assn::generateIR() const {
+
+}
+
+void add_assn::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
+	}
+	std::cout << "├────add_assign"<< std::endl;
+	if(unary_expression_ != nullptr) unary_expression_->printAST(depth + 1);
+	if(assignment_expression_ != nullptr) assignment_expression_->printAST(depth + 1);
+}
+
+void sub_assn::generateIR() const {
+
+}
+
+void sub_assn::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
+	}
+	std::cout << "├────sub_assign"<< std::endl;
+	if(unary_expression_ != nullptr) unary_expression_->printAST(depth + 1);
+	if(assignment_expression_ != nullptr) assignment_expression_->printAST(depth + 1);
+}
+
+void left_assn::generateIR() const {
+
+}
+
+void left_assn::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
+	}
+	std::cout << "├────left_assign"<< std::endl;
+	if(unary_expression_ != nullptr) unary_expression_->printAST(depth + 1);
+	if(assignment_expression_ != nullptr) assignment_expression_->printAST(depth + 1);
+}
+
+void right_assn::generateIR() const {
+
+}
+
+void right_assn::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
+	}
+	std::cout << "├────right_assign"<< std::endl;
+	if(unary_expression_ != nullptr) unary_expression_->printAST(depth + 1);
+	if(assignment_expression_ != nullptr) assignment_expression_->printAST(depth + 1);
+}
+
+void and_assn::generateIR() const {
+
+}
+
+void and_assn::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
+	}
+	std::cout << "├────and_assign"<< std::endl;
+	if(unary_expression_ != nullptr) unary_expression_->printAST(depth + 1);
+	if(assignment_expression_ != nullptr) assignment_expression_->printAST(depth + 1);
+}
+
+void xor_assn::generateIR() const {
+
+}
+
+void xor_assn::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
+	}
+	std::cout << "├────xor_assign"<< std::endl;
+	if(unary_expression_ != nullptr) unary_expression_->printAST(depth + 1);
+	if(assignment_expression_ != nullptr) assignment_expression_->printAST(depth + 1);
+}
+
+void or_assn::generateIR() const {
+
+}
+
+void or_assn::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
+	}
+	std::cout << "├────or_assign"<< std::endl;
+	if(unary_expression_ != nullptr) unary_expression_->printAST(depth + 1);
+	if(assignment_expression_ != nullptr) assignment_expression_->printAST(depth + 1);
+}
+
+void expression_list::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
+	}
+	std::cout << "├────expression_list"<< std::endl;
+	for(int i = 0 ; i < (int)nodes_.size() ; i++) {
+		if(nodes_[i] != nullptr) nodes_[i]->printAST(depth + 1);
+	}
+}

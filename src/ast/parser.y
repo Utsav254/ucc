@@ -82,7 +82,7 @@ postfix_expression
 	;
 
 argument_expression_list
-	: assignment_expression { $$ = new nodelist($1 , list_type::ARGUMENT_EXPR); }
+	: assignment_expression { $$ = new argument_expression_list($1); }
 	| argument_expression_list ',' assignment_expression { $1->pushback($3); $$ = $1; }
 	;
 
@@ -171,21 +171,21 @@ conditional_expression
 
 assignment_expression
 	: conditional_expression { $$ = $1; }
-	| unary_expression '=' assignment_expression { $$ = new assn_op($1 , $3 , assn::EQUALS); }
-	| unary_expression MUL_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::MUL); }
-	| unary_expression DIV_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::DIV); }
-	| unary_expression MOD_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::MOD); }
-	| unary_expression ADD_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::ADD); }
-	| unary_expression SUB_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::SUB); }
-	| unary_expression LEFT_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::LEFT); }
-	| unary_expression RIGHT_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::RIGHT); }
-	| unary_expression AND_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::AND); }
-	| unary_expression XOR_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::XOR); }
-	| unary_expression OR_ASSIGN assignment_expression { $$ = new assn_op($1 , $3 , assn::OR); }
+	| unary_expression '=' assignment_expression { $$ = new equals_assn($1 , $3); }
+	| unary_expression MUL_ASSIGN assignment_expression { $$ = new mul_assn($1 , $3); }
+	| unary_expression DIV_ASSIGN assignment_expression { $$ = new div_assn($1 , $3); }
+	| unary_expression MOD_ASSIGN assignment_expression { $$ = new modu_assn($1 , $3); }
+	| unary_expression ADD_ASSIGN assignment_expression { $$ = new add_assn($1 , $3); }
+	| unary_expression SUB_ASSIGN assignment_expression { $$ = new sub_assn($1 , $3); }
+	| unary_expression LEFT_ASSIGN assignment_expression { $$ = new left_assn($1 , $3); }
+	| unary_expression RIGHT_ASSIGN assignment_expression { $$ = new right_assn($1 , $3); }
+	| unary_expression AND_ASSIGN assignment_expression { $$ = new and_assn($1 , $3); }
+	| unary_expression XOR_ASSIGN assignment_expression { $$ = new xor_assn($1 , $3); }
+	| unary_expression OR_ASSIGN assignment_expression { $$ = new or_assn($1 , $3); }
 	;
 
 expression
-	: assignment_expression { $$ = new nodelist($1 , list_type::EXPRESSION); }
+	: assignment_expression { $$ = new expression_list($1); }
 	| expression ',' assignment_expression { $1->pushback($3); $$ = $1; }
 	;
 
@@ -199,18 +199,18 @@ declaration
 	;
 
 declaration_specifiers
-	: storage_class_specifier { $$ = new nodelist($1 , list_type::DECL_SPEC); }
+	: storage_class_specifier { $$ = new declaration_specifiers($1); }
 	| storage_class_specifier declaration_specifiers { $2->pushback($1); $$ = $2; }
-	| type_specifier { $$ = new nodelist($1 , list_type::DECL_SPEC); }
+	| type_specifier { $$ = new declaration_specifiers($1); }
 	| type_specifier declaration_specifiers { $2->pushback($1); $$ = $2; }
-	| type_qualifier { $$ = new nodelist($1 , list_type::DECL_SPEC); }
+	| type_qualifier { $$ = new declaration_specifiers($1); }
 	| type_qualifier declaration_specifiers { $2->pushback($1); $$ = $2; }
-	| function_specifier { $$ = new nodelist($1 , list_type::DECL_SPEC); }
+	| function_specifier { $$ = new declaration_specifiers($1); }
 	| function_specifier declaration_specifiers { $2->pushback($1); $$ = $2; }
 	;
 
 init_declarator_list
-	: init_declarator { $$ = new nodelist($1 , list_type::INIT_DECL); }
+	: init_declarator { $$ = new init_declaration_list($1); }
 	| init_declarator_list ',' init_declarator { $1->pushback($3); $$ = $1; }
 	;
 
@@ -254,7 +254,7 @@ struct_or_union
 	;
 
 struct_declaration_list
-	: struct_declaration { $$ = new nodelist($1 , list_type::STRUCT_DECLARATION); }
+	: struct_declaration { $$ = new struct_declaration_list($1); }
 	| struct_declaration_list struct_declaration { $1->pushback($2); $$ = $1; }
 	;
 
@@ -264,13 +264,13 @@ struct_declaration
 
 specifier_qualifier_list
 	: type_specifier specifier_qualifier_list { $2->pushback($1); $$ = $2; }
-	| type_specifier { $$ = new nodelist($1 , list_type::SPEC_QUAL); }
+	| type_specifier { $$ = new specifier_qualifier_list($1); }
 	| type_qualifier specifier_qualifier_list { $2->pushback($1); $$ = $2; }
-	| type_qualifier { $$ = new nodelist($1 , list_type::SPEC_QUAL); }
+	| type_qualifier { $$ = new specifier_qualifier_list($1); }
 	;
 
 struct_declarator_list
-	: struct_declarator { $$ = new nodelist($1 , list_type::STRUCT_DECLARATOR); }
+	: struct_declarator { $$ = new struct_declarator_list($1); }
 	| struct_declarator_list ',' struct_declarator { $1->pushback($3); $$ = $1; }
 	;
 
@@ -350,7 +350,7 @@ parameter_type_list
 	;
 
 parameter_list
-	: parameter_declaration { $$ = new nodelist($1 , list_type::PARAMETER); }
+	: parameter_declaration { $$ = new parameter_list($1); }
 	| parameter_list ',' parameter_declaration { $1->pushback($3); $$ = $1; }
 	;
 
@@ -362,7 +362,7 @@ parameter_declaration
 	;
 
 identifier_list
-	: IDENTIFIER { $$ = new nodelist( new identifier(*$1) , list_type::IDENTIFIER); delete $1; }
+	: IDENTIFIER { $$ = new identifier_list(new identifier(*$1)); delete $1; }
 	| identifier_list ',' IDENTIFIER { $1->pushback(new identifier(*$3)); delete $3 ; $$ = $1; }
 	;
 
@@ -419,12 +419,12 @@ designator
 	;
 
 statement
-	: labeled_statement { $$ = new statement($1 , statement_type::LABELLED); }
-	| compound_statement { $$ = new statement($1 , statement_type::COMPOUND); }
-	| expression_statement { $$ = new statement($1 , statement_type::EXPRESSION); }
-	| selection_statement { $$ = new statement($1 , statement_type::SELECTION); }
-	| iteration_statement { $$ = new statement($1 , statement_type::ITERATION); }
-	| jump_statement { $$ = new statement($1 , statement_type::JUMP); }
+	: labeled_statement { $$ = $1; }
+	| compound_statement { $$ = $1; }
+	| expression_statement { $$ = $1; }
+	| selection_statement { $$ = $1; }
+	| iteration_statement { $$ = $1; }
+	| jump_statement { $$ = $1; }
 	;
 
 labeled_statement
@@ -439,7 +439,7 @@ compound_statement
 	;
 
 block_item_list
-	: block_item { $$ = new nodelist($1 , list_type::BLOCK); }
+	: block_item { $$ = new block_item_list($1); }
 	| block_item_list block_item { $1->pushback($2) ; $$ = $1; }
 	;
 
@@ -470,18 +470,18 @@ iteration_statement
 	;
 
 jump_statement
-	: GOTO IDENTIFIER ';' { $$ = new jump_statement_goto(jump_type::GOTO , new identifier(*$2)); delete $2; }
-	| CONTINUE ';' { $$ = new jump_statement(jump_type::CONTINUE); }
-	| BREAK ';' { $$ = new jump_statement(jump_type::BREAK); }
-	| RETURN ';' { $$ = new jump_statement(jump_type::RETURN); }
-	| RETURN expression ';' { $$ = new jump_statement_ret_expr(jump_type::RETURN , $2); }
+	: GOTO IDENTIFIER ';' { $$ = new jump_statement_goto(new identifier(*$2)); delete $2; }
+	| CONTINUE ';' { $$ = new jump_statement_continue(); }
+	| BREAK ';' { $$ = new jump_statement_break(); }
+	| RETURN ';' { $$ = new jump_statement_ret(); }
+	| RETURN expression ';' { $$ = new jump_statement_ret_expr($2); }
 	;
 
 ROOT
 	:translation_unit { root_node = $1; }
 
 translation_unit
-	: external_declaration { $$ = new nodelist($1 , list_type::TRANSLATION_UNIT); }
+	: external_declaration { $$ = new translation_unit($1); }
 	| translation_unit external_declaration { $1->pushback($2); $$ = $1; }
 	;
 
@@ -496,7 +496,7 @@ function_definition
 	;
 
 declaration_list
-	: declaration { $$ = new nodelist($1 , list_type::DECLARATION); }
+	: declaration { $$ = new declaration_list($1); }
 	| declaration_list declaration { $1->pushback($2); $$ = $1; }
 	;
 

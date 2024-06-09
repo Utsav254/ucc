@@ -3,29 +3,9 @@
 
 #include "../node.hpp"
 
-enum class jump_type {
-	GOTO,
-	CONTINUE,
-	BREAK,
-	RETURN,
-};
-
-class jump_statement : public node {
+class jump_statement_goto : public node {
 public:
-	jump_statement(jump_type j) : j_(j){}
-	~jump_statement() {}
-	
-	void generateIR() const override;
-	void printAST(int depth) const override;
-
-protected:
-	jump_type j_;
-};
-
-class jump_statement_goto : public jump_statement {
-public:
-	jump_statement_goto(jump_type j , node *identifier) :
-		jump_statement(j),
+	jump_statement_goto(node *identifier) :
 		identifier_(identifier){}
 
 	~jump_statement_goto() {
@@ -39,10 +19,36 @@ private:
 	node *identifier_;
 };
 
-class jump_statement_ret_expr: public jump_statement {
+class jump_statement_continue : public node {
 public:
-	jump_statement_ret_expr(jump_type j , node *expression) :
-		jump_statement(j),
+	jump_statement_continue(){}
+	~jump_statement_continue(){}
+
+	void generateIR() const override;
+	void printAST(int depth) const override;
+};
+
+class jump_statement_break : public node {
+public:
+	jump_statement_break(){}
+	~jump_statement_break(){}
+
+	void generateIR() const override;
+	void printAST(int depth) const override;
+};
+
+class jump_statement_ret : public node {
+public:
+	jump_statement_ret(){}
+	~jump_statement_ret(){}
+
+	void generateIR() const override;
+	void printAST(int depth) const override;
+};
+
+class jump_statement_ret_expr: public node {
+public:
+	jump_statement_ret_expr(node *expression) :
 		expression_(expression){}
 
 	~jump_statement_ret_expr() {

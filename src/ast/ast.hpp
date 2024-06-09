@@ -30,7 +30,7 @@
 
 //statements:
 #include "statements/jumps.hpp"
-#include "statements/statements.hpp"
+#include "statements/block.hpp"
 #include "statements/switch_case.hpp"
 #include "statements/if_else.hpp"
 #include "statements/while.hpp"
@@ -40,10 +40,6 @@
 #include "struct_union/struct_union.hpp"
 #include "struct_union/struct_union_decls.hpp"
 #include "struct_union/struct_union_member.hpp"
-
-enum class node_type{
-
-};
 
 
 #endif

@@ -20,6 +20,14 @@ private:
 	node *struct_decl_list_;
 };
 
+class struct_declaration_list : public nodelist {
+public:
+	struct_declaration_list(node *first_node) : nodelist(first_node){}
+
+	void generateIR() const override;
+	void printAST(int depth) const override;
+};
+
 class struct_declarator : public node {
 public:
 	struct_declarator(node *declarator) : declarator_(declarator){}	
@@ -32,6 +40,14 @@ public:
 
 protected:
 	node *declarator_;
+};
+
+class struct_declarator_list : public nodelist {
+public:
+	struct_declarator_list(node *first_node) : nodelist(first_node){}
+
+	void generateIR() const override;
+	void printAST(int depth) const override;
 };
 
 class struct_declarator_size : public struct_declarator {

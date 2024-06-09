@@ -69,5 +69,12 @@ private:
 	std::string identifier_;
 };
 
+class identifier_list : public nodelist {
+public:
+	identifier_list(node *first_node) : nodelist(first_node){}
+
+	void printAST(int depth) const override;
+};
+
 #endif
 

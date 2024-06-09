@@ -1,6 +1,7 @@
 #ifndef NODE_HPP
 #define NODE_HPP
 
+#include <typeinfo>
 #include <vector>
 #include <string>
 
@@ -8,10 +9,17 @@ class node {
 public:
 
 	node(){};
+
 	virtual ~node(){};
 
 	virtual void generateIR() const = 0;
+
 	virtual void printAST(int depth) const = 0;
+
+	virtual const std::type_info& get_node_type() const final {
+		return typeid(*this);
+	}
+
 	//will possibly need the following:
 	//getsize()
 	//gettype()
@@ -27,46 +35,23 @@ public:
 
 };
 
-enum class list_type {
-	DECLARATION,
-	INIT_DECL,
-	TRANSLATION_UNIT,
-	PARAMETER_TYPE,
-	PARAMETER,
-	ARGUMENT_EXPR,
-	ENUMERATOR,
-	BLOCK,
-	DECL_SPEC,
-	EXPRESSION,
-	IDENTIFIER,
-	STRUCT_DECLARATION,
-	STRUCT_DECLARATOR,
-	SPEC_QUAL,
-};
-
 class nodelist : public node {
 
 public: 
-	//constructor
-	nodelist(node *first_node , list_type lt) : nodes_({first_node})  , lt_(lt){}
-	//destrcutor
+	nodelist(node *first_node) : nodes_({first_node}){}
 	~nodelist() {
 		for(int i = 0 ; i < (int)nodes_.size() ; i++) {
 			delete nodes_[i];
 		}
 	}
 
-	//remaning override member functions
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
-	//derrived specific function:
 	void pushback(node *next);
 
-
-private:
+protected:
 	std::vector <node*> nodes_;
-	list_type lt_;
 };
 
 

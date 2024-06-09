@@ -17,6 +17,22 @@ protected:
 	node *declaration_specifier_;
 };
 
+class declaration_list : public nodelist {
+public:
+	declaration_list(node *first_node) : nodelist(first_node){}
+
+	void generateIR() const override;
+	void printAST(int depth) const override;
+};
+
+class init_declaration_list : public nodelist {
+public:
+	init_declaration_list(node *first_node) : nodelist(first_node){}
+
+	void generateIR() const override;
+	void printAST(int depth) const override;
+};
+
 class declaration_init_decl : public declaration {
 public:
 	declaration_init_decl(node *declaration_specifier , nodelist *init_decl_list) : 

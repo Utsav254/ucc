@@ -3,6 +3,17 @@
 
 #include "../node.hpp"
 
+//declaration members
+
+class specifier_qualifier_list : public nodelist {
+public:
+	specifier_qualifier_list(node *first_node) : nodelist(first_node){}
+	
+	void printAST(int depth) const override;
+};
+
+//refercing members
+
 class member_op : public node {
 public:
 	member_op(node *postfix_expression , node *identifier) :

@@ -59,3 +59,14 @@ void identifier::printAST(int depth) const {
     std::cout << "├────identifier: " << identifier_ << std::endl;
 }
 
+void identifier_list::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
+	}
+	std::cout << "├────identifier_list"<< std::endl;
+	for(int i = 0 ; i < (int)nodes_.size() ; i++) {
+		if(nodes_[i] != nullptr) nodes_[i]->printAST(depth + 1);
+	}
+}
+
+

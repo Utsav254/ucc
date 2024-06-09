@@ -50,5 +50,12 @@ private:
 	node *type_name_;
 };
 
+class translation_unit : public nodelist {
+public:
+	translation_unit(node *first_node) : nodelist(first_node){}
+
+	void printAST(int depth) const override;
+};
+
 
 #endif

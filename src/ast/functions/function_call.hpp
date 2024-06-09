@@ -33,4 +33,12 @@ private:
 	nodelist *argument_expr_list_;
 };
 
+class argument_expression_list : public nodelist {
+public:
+	argument_expression_list(node *first_node) : nodelist(first_node){}
+
+	void generateIR() const override;
+	void printAST(int depth) const override;
+};
+
 #endif
