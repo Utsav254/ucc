@@ -20,7 +20,9 @@ public:
 		return typeid(*this);
 	}
 
-	virtual void track_typedef_decl() const {return;}
+	//functions for tracking typedef declarations:
+	virtual bool decl_spec_typedef_check() const {return false;}
+	virtual void add_type_temp_typedef_check() const { return; }
 
 	//will possibly need the following:
 	//getsize()

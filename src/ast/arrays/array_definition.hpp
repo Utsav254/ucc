@@ -13,6 +13,10 @@ public:
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
+	void add_type_temp_typedef_check() const override {
+		direct_declarator_->add_type_temp_typedef_check();
+	}
+
 protected:
 	node *direct_declarator_;
 };
@@ -29,6 +33,8 @@ public:
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
+
+	//will inherit the typedef checker of array defintion
 
 private: 
 	node *assignment_expression_;

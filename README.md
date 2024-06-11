@@ -24,6 +24,9 @@ The IR would probably made using a base class called "block" from which there ar
     
     1> handle types...create some type class which can handle custom types, struct and the stand types
     2> write testing script for parsing only? reuse test from langproc ?
+    3> add a warning system for non errors
+    4> write a direct declarator class to encapsulate all direct declarator types 
+        which will inherit all direct declarator stuff for context
 
 ### LOW PRIORITY TODO:
     1> fix the char and string literal lexers to handle all cases

@@ -15,6 +15,11 @@ public:
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
+	//to be carefuly done since this is relaed to function pointers
+	void add_type_temp_typedef_check() const override {
+		direct_declarator_->add_type_temp_typedef_check();
+	}
+
 protected:
 	node *direct_declarator_;
 };
@@ -33,6 +38,8 @@ public:
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
+	//will inherit the function_declarator typedef checker
+
 private:
 	nodelist *parameter_list_;
 };
@@ -49,6 +56,8 @@ public:
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
+
+	//typedef_checker would throw a warning...
 
 private:
 	nodelist *identifier_list_;

@@ -3,6 +3,8 @@
 
 #include <variant>
 #include "../node.hpp"
+#include "../../context.hpp"
+
 
 //base class for constant types
 class constant : public node {
@@ -78,6 +80,10 @@ public:
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
+
+	void add_type_temp_typedef_check() const override {
+		ctx->insert_custom_type_tmp(identifier_);
+	}
 
 private:
 	std::string identifier_;

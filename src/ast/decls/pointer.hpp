@@ -16,6 +16,8 @@ public:
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
+	//should inherit the typedef checker function from the ordinary declarator
+
 private:
 	node *pointer_;
 };

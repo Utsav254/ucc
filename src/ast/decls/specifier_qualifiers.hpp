@@ -40,6 +40,10 @@ public:
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
+	bool decl_spec_typedef_check() const override {
+		return (storage_class_spec_ == "TYPEDEF");
+	}
+
 private:
 	std::string storage_class_spec_;
 };
@@ -65,6 +69,15 @@ public:
 	declaration_specifiers(node *first_node) : nodelist(first_node){}
 
 	void printAST(int depth) const override;
+
+	//check for presence of typedef storage class specifier;
+	bool decl_spec_typedef_check() const override {
+		for(int i = 0 ; i < (int)nodes_.size() ; i++) {
+			if(nodes_[i]->decl_spec_typedef_check() == true) return true;
+			else continue;
+		}
+		return false;
+	}
 };
 
 class  type_qualifier_list: public nodelist {
