@@ -1,5 +1,5 @@
 #include <iostream>
-#include "primaries.hpp"
+#include "ast/misc/primaries.hpp"
 
 void int_constant::generateIR() const {
 }

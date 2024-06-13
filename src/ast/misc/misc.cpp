@@ -1,4 +1,4 @@
-#include "misc.hpp"
+#include "ast/misc/misc.hpp"
 #include <iostream>
 
 void empty::generateIR() const {

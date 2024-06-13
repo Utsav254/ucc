@@ -1,4 +1,4 @@
-#include "array_definition.hpp"
+#include "ast/arrays/array_definition.hpp"
 #include <iostream>
 
 void array_definition::generateIR () const {

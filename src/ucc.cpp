@@ -25,6 +25,7 @@ int main(int argc , char **argv) {
 	//lex and parse the source code
 	node *ast_root = parseAST(cliargs.sourcepath);
 	if(ast_root == nullptr) die("Fatal parsing failure: parse tree does not exist" , errcode::INTERNAL);
+
 	//temporarily print the ast to the console for debugging use
 	root_node->printAST(1);
 

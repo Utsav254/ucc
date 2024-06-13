@@ -1,4 +1,4 @@
-#include "switch_case.hpp"
+#include "ast/statements/switch_case.hpp"
 #include <iostream>
 
 void switch_node::generateIR() const {

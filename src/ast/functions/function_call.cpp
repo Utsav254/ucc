@@ -1,4 +1,4 @@
-#include "function_call.hpp"
+#include "ast/functions/function_call.hpp"
 #include <iostream>
 
 void function_call::generateIR() const {

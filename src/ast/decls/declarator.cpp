@@ -1,4 +1,4 @@
-#include "declarator.hpp"
+#include "ast/decls/declarator.hpp"
 #include <iostream>
 
 void declarator::generateIR() const {

@@ -1,4 +1,4 @@
-#include "specifier_qualifiers.hpp"
+#include "ast/decls/specifier_qualifiers.hpp"
 #include <iostream>
 
 void type_specifier::generateIR() const {

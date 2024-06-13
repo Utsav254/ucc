@@ -1,4 +1,4 @@
-#include "pointer.hpp"
+#include "ast/decls/pointer.hpp"
 #include <iostream>
 
 void declarator_pointer::generateIR() const {

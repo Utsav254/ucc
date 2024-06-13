@@ -1,4 +1,4 @@
-#include "array_index.hpp"
+#include "ast/arrays/array_index.hpp"
 #include <iostream>
 
 void array_index::generateIR() const {

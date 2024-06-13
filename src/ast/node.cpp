@@ -1,5 +1,5 @@
 #include <iostream>
-#include "node.hpp"
+#include "ast/node.hpp"
 
 void nodelist::generateIR() const {
 	for(int i = 0 ; i < (int)nodes_.size() ; i++) {

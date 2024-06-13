@@ -1,4 +1,3 @@
-bin/
 *.o
 *.tab.hpp
 *.tab.cpp
@@ -9,4 +8,14 @@ ucc
 testsrc.c
 testout.s
 
+build/
+
+# CMake-specific files
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+CMakeScripts/
+cmake_install.cmake
+compile_commands.json
+Makefile
 

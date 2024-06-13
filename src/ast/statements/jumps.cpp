@@ -1,4 +1,4 @@
-#include "jumps.hpp"
+#include "ast/statements/jumps.hpp"
 #include <iostream>
 
 void jump_statement_goto::generateIR() const {

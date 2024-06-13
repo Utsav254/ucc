@@ -1,4 +1,4 @@
-#include "parameter.hpp"
+#include "ast/functions/parameter.hpp"
 #include <iostream>
 
 void parameter_decl::generateIR() const {

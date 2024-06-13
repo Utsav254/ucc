@@ -1,4 +1,4 @@
-#include "cond_expression.hpp"
+#include "ast/arithmetic/cond_expression.hpp"
 #include <iostream>
 
 void conditional_expression::generateIR() const {

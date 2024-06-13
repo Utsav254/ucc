@@ -1,8 +1,9 @@
 %code requires{
 	//from: https://www.quut.com/c/ANSI-C-grammar-y-1999.html
-    #include "ast.hpp"
-	#include "../error.hpp"
+    #include "ast/ast.hpp"
+	#include "error.hpp"
 	#include <string>
+	#include <iostream>
 
     extern node *root_node;
     extern FILE *yyin;
@@ -31,7 +32,6 @@
 %token CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE CONST VOLATILE VOID
 %token STRUCT UNION ENUM ELLIPSIS
 %token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
-
 
 %type <Node> external_declaration function_definition primary_expression postfix_expression 
 %type <Node> unary_expression cast_expression multiplicative_expression additive_expression shift_expression relational_expression
@@ -505,7 +505,7 @@ declaration_list
 %%
 
 void yyerror(char const *s) {
-	s = s;
+	std::cout << s << std::endl;
 	die(errpadding , errcode::SYNTAX);
 }
 
