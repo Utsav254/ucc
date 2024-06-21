@@ -1,4 +1,5 @@
 #include "error.hpp"
+#include "context.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -51,7 +52,7 @@ void die(std::string message , errcode n) {
 void cleanup() {
 	if (root_node != nullptr) delete root_node;
 	if (ir != nullptr) delete ir;
-	if(ctx != nullptr) delete ctx;
+	context::free();
 }
 
 

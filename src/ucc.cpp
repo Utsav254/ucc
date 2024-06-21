@@ -9,12 +9,10 @@
 CLI_args cliargs;
 node *root_node;
 IR *ir;
-context *ctx;
 
 int main(int argc , char **argv) {
-
-	// initialise the basic symbol table
-	ctx = new context; 
+	//initialise the compiler:
+	context::initialise();
 
 	//process cli args as required
 	cliargs = parse_command_line_arguments(argc , argv);

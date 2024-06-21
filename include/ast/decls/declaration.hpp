@@ -6,9 +6,10 @@
 
 class declaration : public node {
 public:
-	declaration(node *declaration_specifier) : declaration_specifier_(declaration_specifier) {
-		//do nothing these declarations are usually useless
-	}
+	declaration(node *declaration_specifier) : declaration_specifier_(declaration_specifier) {}
+		//used in in declarating struct or union types without instantiation
+		//check if struct or union present else throw warning of useless declaration
+	
 	~declaration() {
 		if(declaration_specifier_ != nullptr) delete declaration_specifier_;
 	}
@@ -40,6 +41,7 @@ public:
 			if(nodes_[i]->get_node_type() != typeid(init_declarator_ini)){
 				nodes_[i]->add_type_temp_typedef_check();
 			}
+			//else throw warning of useless initialisation on a tpyedef;
 		}
 	}
 };

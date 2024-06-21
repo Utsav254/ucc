@@ -3,7 +3,6 @@
 
 #include "ast/node.hpp"
 #include "cli.hpp"
-#include "context.hpp"
 #include "interm_repr/interm_repr.hpp"
 #include <string>
 
@@ -14,7 +13,6 @@ extern CLI_args cliargs;
 // to be delete by cleanup
 extern node *rootnode;
 extern IR *ir;
-extern context *ctx;
 
 enum class errcode {
 	COMMAND_LINE_ARGS = 1,

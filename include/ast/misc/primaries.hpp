@@ -82,7 +82,7 @@ public:
 	void printAST(int depth) const override;
 
 	void add_type_temp_typedef_check() const override {
-		ctx->insert_custom_type_tmp(identifier_);
+		context::insert_custom_type_tmp(identifier_);
 	}
 
 private:

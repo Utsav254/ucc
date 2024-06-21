@@ -2,58 +2,36 @@
 #define CONTEXT_HPP
 
 #include <string>
-#include <unordered_set>
-#include <unordered_map>
-#include <stack>
 
-class context;
-class symbolinfo;
+struct symbolinfo {
+	std::string type_name;
+	bool is_pointer;
+	int pointer_depth;
 
-extern context *ctx;
+	symbolinfo(std::string type , bool is_ptr , int ptr_depth) : 
+		type_name(type) , is_pointer(is_ptr) , pointer_depth(ptr_depth){}
 
-class context {
-public:
-	context() {
-		scopes_["global"] = "global";
-		//add all standard types to the types_ table
-		//set up all basic stuff
-	}
-	~context() = default;
-
-	//temporary type set functions:
-	void insert_custom_type_tmp(std::string type_name) {
-		types_tmp_.insert(type_name);
-	}
-	bool is_member_types_tmp(std::string query) {
-		return (types_tmp_.find(query) != types_tmp_.end());
-	}
-	void clear_type_tmp() {
-		types_tmp_.clear();
-		return;
+	symbolinfo(std::string type , bool is_ptr) : 
+		type_name(type) , is_pointer(is_ptr) {
+		if(is_pointer) pointer_depth = 1;
+		else pointer_depth = 0;
 	}
 
-
-private:
-	//holds temp types before assembling types into the type hierarchy table
-	//should be cleared one no longer needed
-	std::unordered_set<std::string>	types_tmp_;
-
-	//used to keep track of current scope as tree is traversed
-	//<current_scope_name>
-	std::stack<std::string> traversed_scopes_;
-
-	//holds the scope hierarchy of scopes
-	// < scope_name , parent_scope >
-	std::unordered_map<std::string , std::string> scopes_;
-
-	//holds the type info with their scopes:
-	// < scope_name , type_name >
-	std::unordered_map<std::string , std::string> types_;
-
-	//should later hold parameters and variables and all sorts of stuff
-	//<scope_name , < symbol_identifier , symbol information > >
-	std::unordered_map<std::string , std::unordered_map<std::string , symbolinfo*>> variables_;
-	//...
+	//size
+	//arr_size
+	//stack location?
 };
+
+namespace context{
+	void initialise();
+	void free();
+	
+	//temporary type set functions:
+	void insert_custom_type_tmp(std::string type_name);
+	bool is_member_types_tmp(std::string query);
+	void clear_type_tmp();
+
+
+}
 
 #endif

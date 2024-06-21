@@ -146,7 +146,7 @@ void count(const char *s) {
 }
 
 int check_type(const char *s) {
-	if(! ctx->is_member_types_tmp(std::string(s))) return IDENTIFIER;
+	if(!context::is_member_types_tmp(std::string(s))) return IDENTIFIER;
 	else return TYPE_NAME;
 }
 
