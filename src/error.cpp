@@ -1,58 +1,46 @@
 #include "error.hpp"
 #include "context.hpp"
+#include <algorithm>
 #include <iostream>
-#include <fstream>
 
-const char* err_to_string(errcode e) {
-	switch(e) {
-		case errcode::COMMAND_LINE_ARGS: return "command line args";
-		case errcode::FILE_IO: return "file I/O";
-		case errcode::SYNTAX: return "syntax";
-		case errcode::PARSING: return "parsing";
-		case errcode::INTERNAL: return "internal";
-		default: return "unknown";
+namespace errors{
+	namespace {
+		std::vector <error*> err_list;
 	}
-}	
 
-void die(std::string message , errcode n) {
-	std::cerr << "\x1b[31mERROR:\x1b[0m " << err_to_string(n) << "\n";
+	void add_err(error *err) {
+		err_list.push_back(err);
+	}
 
-	switch(n) {
-		case errcode::COMMAND_LINE_ARGS:
-		case errcode::FILE_IO:
-		case errcode::INTERNAL: 
-			std::cerr << message << std::endl;
-			break;
-        case errcode::SYNTAX:
-		case errcode::PARSING: {
-			std::ifstream file(cliargs.sourcepath);
-			std::string line;
-			int currline = 1;
-			while(std::getline(file , line)){
-				if(currline == (errlineno+1)) {
-					std::cerr << " " << errlineno+1 << "|";
-					std::cerr << line << std::endl;
-					std::cerr << "  " << "|";
-					std::cerr << errpadding << "^" << std::endl;
-					break;
-				}
-				else currline++;
-			}
-        	break;
+	int get_err_count() {
+		//is a fancy iterator and lambda function really necassary?
+		return std::count_if(err_list.begin() , err_list.end() , [](error * e)
+			{return !e->check_warning();});
+	}
+
+	void emit_all_err() {
+		for(int i = 0 ; i < (int)err_list.size() ; i++) {
+			if(err_list[i] != nullptr) err_list[i]->emit_err();
 		}
-		default: 
-			std::cerr << "Unknown" << std::endl;
-    }
+	}
 
-    cleanup();
+	//---- fatal error functions ----//
+	void die(std::string message) {
+		std::cerr << "\x1b[31mERROR:\x1b[0m "<< "\n";
+		std::cerr << message << std::endl;
+		cleanup();
+		exit(1);
+	}
 
-	exit((int)n);
+	void cleanup() {
+		if (root_node != nullptr) delete root_node;
+		if (ir != nullptr) delete ir;
+		context::free();
+		
+		for(int i = 0 ; i < (int)err_list.size() ; i++) {
+			if(err_list[i] != nullptr) delete err_list[i];
+		}
+
+	}
 }
-
-void cleanup() {
-	if (root_node != nullptr) delete root_node;
-	if (ir != nullptr) delete ir;
-	context::free();
-}
-
 

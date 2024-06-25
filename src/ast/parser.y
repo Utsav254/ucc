@@ -7,7 +7,6 @@
 
     extern node *root_node;
     extern FILE *yyin;
-	extern std::string errpading;
 
     int yylex(void);
     void yyerror(const char *);
@@ -35,17 +34,17 @@
 
 %type <Node> external_declaration function_definition primary_expression postfix_expression 
 %type <Node> unary_expression cast_expression multiplicative_expression additive_expression shift_expression relational_expression
-%type <Node> equality_expression and_expression exclusive_or_expression inclusive_or_expression logical_and_expression logical_or_expression
-%type <Node> conditional_expression assignment_expression constant_expression declaration 
+%type <Node> equality_expression and_expression exclusive_or_expression inclusive_or_expression logical_and_expression 
+%type <Node> conditional_expression assignment_expression constant_expression declaration logical_or_expression
 %type <Node> init_declarator type_specifier struct_declaration 
 %type <Node> struct_declarator enum_specifier enumerator declarator direct_declarator parameter_declaration
 %type <Node> type_name abstract_declarator direct_abstract_declarator initializer statement labeled_statement
 %type <Node> compound_statement expression_statement selection_statement iteration_statement jump_statement
 %type <Node> storage_class_specifier block_item type_qualifier function_specifier struct_or_union_specifier struct_or_union
 
-%type <Nodes> declaration_list init_declarator_list translation_unit parameter_type_list parameter_list argument_expression_list enumerator_list
-%type <Nodes> block_item_list declaration_specifiers expression identifier_list struct_declaration_list specifier_qualifier_list struct_declarator_list
-%type <Nodes> initializer_list type_qualifier_list pointer
+%type <Nodes> declaration_list init_declarator_list translation_unit parameter_type_list parameter_list argument_expression_list 
+%type <Nodes> block_item_list declaration_specifiers expression identifier_list struct_declaration_list specifier_qualifier_list 
+%type <Nodes> initializer_list type_qualifier_list pointer enumerator_list struct_declarator_list
 
 %type <number_int> INT_CONSTANT
 %type <number_float> FLOAT_CONSTANT
@@ -505,8 +504,9 @@ declaration_list
 %%
 
 void yyerror(char const *s) {
-	std::cout << s << std::endl;
-	die(errpadding , errcode::SYNTAX);
+	std::string msg = "error...calling yyerror: ";
+	msg += s;
+	errors::die(msg);
 }
 
 
@@ -515,7 +515,7 @@ node *parseAST(std::string file_name) {
 	yyin = fopen(file_name.c_str(), "r");
 
 	if(yyin == NULL){
-		die("Failure in opening source file" , errcode::FILE_IO);
+		errors::die("Failure in opening source file");
 	}
 
 	root_node = nullptr;

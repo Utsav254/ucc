@@ -1,32 +1,39 @@
 #ifndef ERROR_HPP
 #define ERROR_HPP
 
+#include <string>
+
 #include "ast/node.hpp"
 #include "cli.hpp"
 #include "interm_repr/interm_repr.hpp"
-#include <string>
 
-extern int errlineno;
-extern std::string errpadding;
 extern CLI_args cliargs;
-
-// to be delete by cleanup
 extern node *rootnode;
 extern IR *ir;
 
-enum class errcode {
-	COMMAND_LINE_ARGS = 1,
-	FILE_IO,
-	SYNTAX,
-	PARSING,
-	INTERNAL,
+class error {
+public:
+	error(std::string msg , bool is_warning) : 
+		message_(msg) , is_warning_(is_warning){}
+	virtual ~error(){}
+	virtual void emit_err() const = 0;
+
+	bool check_warning() {return is_warning_;}
+protected:
+	std::string message_;
+	bool is_warning_;
 };
 
-const char* err_to_string(errcode e); 
-
-void die(std::string errmsg , errcode errcd);
-
-void cleanup();
+namespace errors {
+	
+	void add_err(error *err);
+	int get_err_count();
+	void emit_all_err();
+	
+	//---- fatal functions -----//
+	void die(std::string errmsg);
+	void cleanup();
+}
 
 #endif
 

@@ -5,7 +5,7 @@
 CLI_args parse_command_line_arguments(int argc , char **argv) {
 
 	if((argc <= 1) || (argv[argc-1] == NULL)) {
-		die("No command line arguments provided" , errcode::COMMAND_LINE_ARGS);
+		errors::die("No command line arguments provided");
 	}
 
 	CLI_args args;
@@ -25,13 +25,13 @@ CLI_args parse_command_line_arguments(int argc , char **argv) {
 				if(optopt == 'S' || optopt == 'o') std::cerr << "flag: " << optopt << "requires an argument" << std::endl;
 				else if(isprint(optopt)) std::cerr << "Unknown flag: " << (char)optopt << std::endl;
 				else std::cerr << "Unknown flag character" << std::endl;
-				die("Unable to parse commandline arguments" , errcode::COMMAND_LINE_ARGS);
+				errors::die("Unable to parse commandline arguments");
 				break;
 		}
 	}
 
-	if(args.outputpath.length() == 0) die("output file flag -o requires 1 argument" , errcode::COMMAND_LINE_ARGS);
-	if(args.sourcepath.length() == 0) die("source file flag -S requires 1 arugment" , errcode::COMMAND_LINE_ARGS);
+	if(args.outputpath.length() == 0) errors::die("output file flag -o requires 1 argument");
+	if(args.sourcepath.length() == 0) errors::die("source file flag -S requires 1 arugment");
 	
 	return args;
 }
