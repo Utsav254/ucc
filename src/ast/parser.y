@@ -7,6 +7,7 @@
 
     extern node *root_node;
     extern FILE *yyin;
+	extern int yylineno;
 
     int yylex(void);
     void yyerror(const char *);
@@ -504,9 +505,8 @@ declaration_list
 %%
 
 void yyerror(char const *s) {
-	std::string msg = "error...calling yyerror: ";
-	msg += s;
-	errors::die(msg);
+	printf("in yyerror found at line no: %d" , yylineno);
+	errors::die(s);
 }
 
 

@@ -9,6 +9,10 @@ Things to consider:
         - function trace
         - function stack frame
         - return type
+    - add support for multi line string declaration
+
+Things to ammend later:
+    - exit code on errors should be reconsidered
 
 
 

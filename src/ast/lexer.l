@@ -1,5 +1,6 @@
 %option noyywrap
 %option nounput
+%option yylineno
 %{	
 	//from: https://www.quut.com/c/ANSI-C-grammar-l-1999.html
 	extern "C" int fileno(FILE *stream);
@@ -79,6 +80,12 @@ L?'(\\.|[^\\'\n])+'	{ yylval.letter_char = extract_char_value(yytext); return(CH
 
 
 L?\"(\\.|[^\\"\n])*\"	{ yylval.string = new std::string(yytext); return(STRING_LITERAL); }
+
+L?\"[^\"\n]*$			{	
+							errors::add_err(new error("unterminated string" , true)); 
+							yylval.string = new std::string(yytext); 
+							return(STRING_LITERAL); 
+						}
 
 "..."			{ return(ELLIPSIS); }
 ">>="			{ return(RIGHT_ASSIGN); }

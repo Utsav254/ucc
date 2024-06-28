@@ -15,14 +15,15 @@ class error {
 public:
 	error(std::string msg , bool is_warning) : 
 		message_(msg) , is_warning_(is_warning){}
-	virtual ~error(){}
-	virtual void emit_err() const = 0;
+	~error() = default;
 
+	void emit_err();
 	bool check_warning() {return is_warning_;}
-protected:
+private:
 	std::string message_;
 	bool is_warning_;
 };
+
 
 namespace errors {
 	

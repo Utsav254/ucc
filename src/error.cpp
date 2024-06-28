@@ -3,17 +3,17 @@
 #include <algorithm>
 #include <iostream>
 
+
 namespace errors{
 	namespace {
 		std::vector <error*> err_list;
 	}
 
 	void add_err(error *err) {
-		err_list.push_back(err);
+		if(err)err_list.push_back(err);
 	}
 
 	int get_err_count() {
-		//is a fancy iterator and lambda function really necassary?
 		return std::count_if(err_list.begin() , err_list.end() , [](error * e)
 			{return !e->check_warning();});
 	}
@@ -26,10 +26,9 @@ namespace errors{
 
 	//---- fatal error functions ----//
 	void die(std::string message) {
-		std::cerr << "\x1b[31mERROR:\x1b[0m "<< "\n";
 		std::cerr << message << std::endl;
 		cleanup();
-		exit(1);
+		exit(0);
 	}
 
 	void cleanup() {
@@ -40,7 +39,17 @@ namespace errors{
 		for(int i = 0 ; i < (int)err_list.size() ; i++) {
 			if(err_list[i] != nullptr) delete err_list[i];
 		}
-
 	}
+}
+
+void error::emit_err() {
+	if(is_warning_) {
+		std::cerr << "\x1b[1;35mWARNING:\x1b[0m "<< "\n";
+	}
+	else {
+		std::cerr << "\x1b[31mERROR:\x1b[0m "<< "\n";
+	}
+	//use locations to determine the exact location of error
+	std::cout << message_ << std::endl;
 }
 
