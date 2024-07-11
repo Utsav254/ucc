@@ -4,10 +4,8 @@
 #include <string>
 
 #include "ast/node.hpp"
-#include "cli.hpp"
 #include "interm_repr/interm_repr.hpp"
 
-extern CLI_args cliargs;
 extern node *rootnode;
 extern IR *ir;
 

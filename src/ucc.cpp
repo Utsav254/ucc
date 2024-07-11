@@ -6,12 +6,14 @@
 #include "interm_repr/interm_repr.hpp"
 #include "ast/node.hpp"
 
-CLI_args cliargs;
+//global pointers to structures
 node *root_node;
 IR *ir;
 
 int main(int argc , char **argv) {
+
 	//initialise the compiler:
+	CLI_args cliargs;
 	context::initialise();
 
 	//process cli args as required
