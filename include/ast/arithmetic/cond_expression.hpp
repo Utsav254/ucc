@@ -5,7 +5,8 @@
 
 class conditional_expression : public node {
 public:
-	conditional_expression(node *log_or_expr , node *expr , node *cond_expr) : 
+	conditional_expression(const YYLTYPE& loc , const node *log_or_expr , const node *expr , const node *cond_expr) : 
+		node(loc),
 		logical_or_expr_(log_or_expr) , 
 		expression_(expr),
 		conditional_expr_(cond_expr) {}
@@ -20,9 +21,9 @@ public:
 	void printAST(int depth) const override;
 
 private: 
-	node *logical_or_expr_;
-	node *expression_;
-	node* conditional_expr_;
+	const node *logical_or_expr_;
+	const node *expression_;
+	const node* conditional_expr_;
 };
 
 #endif

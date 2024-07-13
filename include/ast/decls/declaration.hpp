@@ -6,7 +6,9 @@
 
 class declaration : public node {
 public:
-	declaration(node *declaration_specifier) : declaration_specifier_(declaration_specifier) {}
+	declaration(const YYLTYPE&loc , const node *declaration_specifier) :
+		node(loc),
+		declaration_specifier_(declaration_specifier) {}
 		//used in in declarating struct or union types without instantiation
 		//check if struct or union present else throw warning of useless declaration
 	
@@ -18,12 +20,13 @@ public:
 	void printAST(int depth) const override;
 
 protected:
-	node *declaration_specifier_;
+	const node *declaration_specifier_;
 };
 
 class declaration_list : public nodelist {
 public:
-	declaration_list(node *first_node) : nodelist(first_node){}
+	declaration_list(const YYLTYPE&loc , node *first_node) :
+		nodelist(loc , first_node){}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -31,7 +34,8 @@ public:
 
 class init_declaration_list : public nodelist {
 public:
-	init_declaration_list(node *first_node) : nodelist(first_node){}
+	init_declaration_list(const YYLTYPE&loc , node *first_node) :
+		nodelist(loc , first_node){}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -48,8 +52,8 @@ public:
 
 class declaration_init_decl : public declaration {
 public:
-	declaration_init_decl(node *declaration_specifier , nodelist *init_decl_list) : 
-		declaration(declaration_specifier),
+	declaration_init_decl(const YYLTYPE&loc , const node *declaration_specifier , const nodelist *init_decl_list) : 
+		declaration(loc , declaration_specifier),
 		init_decl_list_(init_decl_list) 
 		{
 		//check if the declaration specifier contains a typedef in its members;
@@ -66,7 +70,7 @@ public:
 	void printAST(int depth) const override;
 
 private: 
-	nodelist *init_decl_list_;
+	const nodelist *init_decl_list_;
 };
 
 #endif

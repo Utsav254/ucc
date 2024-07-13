@@ -7,31 +7,32 @@
 
 class specifier_qualifier_list : public nodelist {
 public:
-	specifier_qualifier_list(node *first_node) : nodelist(first_node){}
+	specifier_qualifier_list(const YYLTYPE& loc , node *first_node) : nodelist(loc , first_node){}
 	
 	void printAST(int depth) const override;
 };
 
-//refercing members
-
+//virtual class for referencing
 class member_op : public node {
 public:
-	member_op(node *postfix_expression , node *identifier) :
+	member_op(const YYLTYPE& loc , const node *postfix_expression , const node *identifier) :
+		node(loc),
 		postfix_expression_(postfix_expression) , identifier_(identifier){}
+
 	~member_op() {
 		if(postfix_expression_ != nullptr) delete postfix_expression_;
 		if(identifier_ != nullptr) delete identifier_;
 	}
 
 protected:
-	node *postfix_expression_;
-	node *identifier_;
+	const node *postfix_expression_;
+	const node *identifier_;
 };
 
 class dot_member_op : public member_op {
 public:
-	dot_member_op(node *postfix_expression , node *identifier) :
-		member_op(postfix_expression , identifier){}
+	dot_member_op(const YYLTYPE& loc , const node *postfix_expression , const node *identifier) :
+		member_op(loc , postfix_expression , identifier){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -39,8 +40,8 @@ public:
 
 class ptr_member_op : public member_op {
 public:
-	ptr_member_op(node *postfix_expression , node *identifier) :
-		member_op(postfix_expression , identifier){}
+	ptr_member_op(const YYLTYPE& loc , const node *postfix_expression , const node *identifier) :
+		member_op(loc , postfix_expression , identifier){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;

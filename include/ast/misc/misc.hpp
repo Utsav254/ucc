@@ -5,7 +5,7 @@
 
 class empty : public node {
 public:
-	empty(){}
+	empty(const YYLTYPE& loc) : node(loc){}
 	~empty(){}
 
 	void generateIR() const override;
@@ -15,7 +15,7 @@ public:
 
 class ellipsis : public node {
 public:
-	ellipsis(){}
+	ellipsis(const YYLTYPE& loc) : node(loc){}
 	~ellipsis(){}
 
 	void generateIR() const override;
@@ -24,7 +24,10 @@ public:
 
 class sizeof_node : public node {
 public:
-	sizeof_node(node *unary_expression) : unary_expression_(unary_expression){}
+	sizeof_node(const YYLTYPE& loc , const node *unary_expression) :
+		node(loc),
+		unary_expression_(unary_expression){}
+
 	~sizeof_node() {
 		if(unary_expression_ != nullptr) delete unary_expression_;
 	}
@@ -33,12 +36,15 @@ public:
 	void printAST(int depth) const override;
 
 private:
-	node *unary_expression_;
+	const node *unary_expression_;
 };
 
 class sizeof_node_type : public node {
 public:
-	sizeof_node_type(node *type_name) : type_name_(type_name){}
+	sizeof_node_type(const YYLTYPE& loc , const node *type_name) :
+		node(loc),
+		type_name_(type_name){}
+
 	~sizeof_node_type() {
 		if(type_name_ != nullptr) delete type_name_;
 	}
@@ -47,12 +53,12 @@ public:
 	void printAST(int depth) const override;
 
 private:
-	node *type_name_;
+	const node *type_name_;
 };
 
 class translation_unit : public nodelist {
 public:
-	translation_unit(node *first_node) : nodelist(first_node){}
+	translation_unit(const YYLTYPE& loc , node *first_node) : nodelist(loc , first_node){}
 
 	void printAST(int depth) const override;
 };

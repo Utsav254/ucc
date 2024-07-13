@@ -6,35 +6,44 @@
 
 class type_specifier : public node {
 public:
-	type_specifier(std::string type_spec) : type_spec_(type_spec) {}
+	type_specifier(const YYLTYPE&loc , const std::string type_spec) :
+		node(loc),
+		type_spec_(type_spec) {}
+
 	~type_specifier(){};
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	std::string type_spec_;
+	const std::string type_spec_;
 };
 
 //-----------------------------------------
 
 class type_qualifier : public node {
 public:
-	type_qualifier(std::string type_qual) : type_qual_(type_qual) {}
+	type_qualifier(const YYLTYPE&loc , const std::string type_qual) :
+		node(loc),
+		type_qual_(type_qual) {}
+
 	~type_qualifier(){};
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	std::string type_qual_;
+	const std::string type_qual_;
 };
 
 //----------------------------------------
 
 class storage_class_specifier : public node {
 public:
-	storage_class_specifier(std::string storage_class_spec) : storage_class_spec_(storage_class_spec) {}
+	storage_class_specifier(const YYLTYPE&loc , const std::string storage_class_spec) :
+		node(loc),
+		storage_class_spec_(storage_class_spec) {}
+
 	~storage_class_specifier(){};
 
 	void generateIR() const override;
@@ -45,28 +54,31 @@ public:
 	}
 
 private:
-	std::string storage_class_spec_;
+	const std::string storage_class_spec_;
 };
 
 //---------------------------------------
 
 class function_specifier : public node {
 public:
-	function_specifier(std::string function_spec) : function_spec_(function_spec) {}
+	function_specifier(const YYLTYPE&loc , const std::string function_spec) :
+		node(loc),
+		function_spec_(function_spec) {}
+
 	~function_specifier(){};
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	std::string function_spec_;
+	const std::string function_spec_;
 };
 
 //---------------------------------------
 
 class declaration_specifiers : public nodelist {
 public:
-	declaration_specifiers(node *first_node) : nodelist(first_node){}
+	declaration_specifiers(const YYLTYPE&loc , node *first_node) : nodelist(loc , first_node){}
 
 	void printAST(int depth) const override;
 
@@ -82,7 +94,7 @@ public:
 
 class  type_qualifier_list: public nodelist {
 public:
-	type_qualifier_list(node *first_node) : nodelist(first_node){}
+	type_qualifier_list(const YYLTYPE&loc , node *first_node) : nodelist(loc , first_node){}
 
 	void printAST(int depth) const override;
 };

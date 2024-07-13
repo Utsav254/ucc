@@ -11,8 +11,19 @@
 	#include <string.h>
 	#include <string>
 
+	//local functions forward declaration
+
 	int check_type(const char *s);
 	char extract_char_value(const char *text);
+
+	//location handling
+
+	int yycolumn;
+
+	#define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno; \
+		yylloc.first_column = yycolumn; yylloc.last_column = yycolumn + yyleng + 1; \
+		yycolumn += yyleng;
+		
 %}
 
 D	[0-9]
@@ -133,7 +144,8 @@ L?\"[^\"\n]*$			{
 "^"				{ return('^'); }
 "|"				{ return('|'); }
 "?"				{ return('?'); }
-[\v\f\n\t]		{ }
+[\v\f\t]		{ }
+[\n]			{ yycolumn = 1; }
 .				{ }
 
 %%

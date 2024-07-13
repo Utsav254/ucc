@@ -5,7 +5,10 @@
 
 class declarator : public node {
 public:
-	declarator(node *direct_declarator) : direct_declarator_(direct_declarator) {}
+	declarator(const YYLTYPE&loc , const node *direct_declarator) :
+		node(loc),
+		direct_declarator_(direct_declarator) {}
+
 	~declarator() {
 		if(direct_declarator_ != nullptr) delete direct_declarator_;
 	}
@@ -18,12 +21,15 @@ public:
 	}
 
 protected: 
-	node *direct_declarator_;
+	const node *direct_declarator_;
 };
 
 class init_declarator : public node {
 public:
-	init_declarator(node *declarator) : declarator_(declarator) {}
+	init_declarator(const YYLTYPE&loc , const node *declarator) :
+		node(loc),
+		declarator_(declarator) {}
+
 	~init_declarator() {
 		if(declarator_ != nullptr) delete declarator_;
 	}
@@ -36,13 +42,13 @@ public:
 	}
 
 protected: 
-	node *declarator_;
+	const node *declarator_;
 };
 
 class init_declarator_ini : public init_declarator {
 public:
-	init_declarator_ini(node *declarator , node *initialiser) : 
-		init_declarator(declarator) , initialiser_(initialiser) {}
+	init_declarator_ini(const YYLTYPE&loc , const node *declarator , const node *initialiser) : 
+		init_declarator(loc , declarator) , initialiser_(initialiser) {}
 
 	~init_declarator_ini() {
 		if(initialiser_ != nullptr) delete initialiser_;
@@ -52,7 +58,7 @@ public:
 	void printAST(int depth) const override;
 
 private:
-	node *initialiser_;
+	const node *initialiser_;
 };
 
 

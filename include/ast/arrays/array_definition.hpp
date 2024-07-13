@@ -5,7 +5,10 @@
 
 class array_definition : public node {
 public:
-	array_definition(node *direct_declarator) : direct_declarator_(direct_declarator) {}
+	array_definition(const YYLTYPE&loc , const node *direct_declarator) :
+		node(loc),
+		direct_declarator_(direct_declarator) {}
+
 	~array_definition() {
 		if(direct_declarator_ != nullptr) delete direct_declarator_;
 	}
@@ -18,13 +21,13 @@ public:
 	}
 
 protected:
-	node *direct_declarator_;
+	const node *direct_declarator_;
 };
 
 class array_definition_size : public array_definition {
 public:
-	array_definition_size(node *direct_declarator , node *assignment_expression) : 
-		array_definition(direct_declarator) , 
+	array_definition_size(const YYLTYPE& loc , const node *direct_declarator , const node *assignment_expression) :
+		array_definition(loc , direct_declarator) , 
 		assignment_expression_(assignment_expression) {}
 
 	~array_definition_size() {
@@ -37,7 +40,7 @@ public:
 	//will inherit the typedef checker of array defintion
 
 private: 
-	node *assignment_expression_;
+	const node *assignment_expression_;
 };
 
 #endif

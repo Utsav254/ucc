@@ -4,13 +4,18 @@
 #include <typeinfo>
 #include <vector>
 #include <string>
+#include "locations.hpp"
+
+struct YYLTYPE;
 
 class node {
 public:
 
-	node(){};
+	node(const YYLTYPE& loc) : _loc(new YYLTYPE(loc)) {}
 
-	virtual ~node(){};
+	virtual ~node() {
+		if(_loc != nullptr) delete _loc;
+	};
 
 	virtual void generateIR() const = 0;
 
@@ -36,13 +41,14 @@ public:
 	//create_var_map()
 	//
 	//--possibly some kind of search or iterate function?
-
+protected:
+	const YYLTYPE *_loc;
 };
 
 class nodelist : public node {
 
 public: 
-	nodelist(node *first_node) : nodes_({first_node}){}
+	nodelist(const YYLTYPE& loc , node *first_node) : node(loc) , nodes_({first_node}){}
 	~nodelist() {
 		for(int i = 0 ; i < (int)nodes_.size() ; i++) {
 			delete nodes_[i];

@@ -6,7 +6,8 @@
 class function_definition : public node {
 public:
 
-	function_definition(node *declaration_specifiers , node *declarator , node *compound_statement) : 
+	function_definition(const YYLTYPE& loc , const node *declaration_specifiers , const node *declarator , const node *compound_statement) :
+		node(loc),
 		declaration_specifiers_(declaration_specifiers),
 		declarator_(declarator), 
 		compound_statement_(compound_statement) {}
@@ -21,17 +22,20 @@ public:
 	void printAST(int depth) const override;
 
 protected:
-    node *declaration_specifiers_;
-	node *declarator_;
-	node *compound_statement_;
+    const node *declaration_specifiers_;
+	const node *declarator_;
+	const node *compound_statement_;
 };
 
 
 class function_definition_decl_list : public function_definition {
 public:
 
-	function_definition_decl_list(node* declaration_specifiers, node* declarator, nodelist* declaration_list, node* compound_statement)
-        : function_definition(declaration_specifiers, declarator, compound_statement), declaration_list_(declaration_list) {}
+	function_definition_decl_list(const YYLTYPE& loc , const node* declaration_specifiers,  
+		const node* declarator, const nodelist* declaration_list, const node* compound_statement) :
+
+		function_definition(loc , declaration_specifiers, declarator, compound_statement), 
+		declaration_list_(declaration_list) {}
 
 	~function_definition_decl_list() {
 		if(declaration_list_ != nullptr) delete declaration_list_;
@@ -41,7 +45,7 @@ public:
 	void printAST(int depth) const override;
 
 private:
-	nodelist *declaration_list_;
+	const nodelist *declaration_list_;
 };
 
 #endif

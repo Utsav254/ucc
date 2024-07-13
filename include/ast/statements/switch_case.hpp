@@ -5,7 +5,8 @@
 
 class switch_node : public node {
 public:
-	switch_node(node *expression , node *statement) : 
+	switch_node(const YYLTYPE&loc , const node *expression , const node *statement) :
+		node(loc),
 		expression_(expression) , statement_(statement){}
 
 	~switch_node() {
@@ -17,13 +18,16 @@ public:
 	void printAST(int depth) const override;
 
 private:
-	node *expression_;
-	node *statement_;
+	const node *expression_;
+	const node *statement_;
 };
 
 class case_default_node : public node {
 public:
-	case_default_node(node *statement) : statement_(statement){}
+	case_default_node(const YYLTYPE&loc , const node *statement) :
+		node(loc),
+		statement_(statement){}
+
 	~case_default_node() {
 		if(statement_ != nullptr) delete statement_;
 	}
@@ -32,13 +36,13 @@ public:
 	void printAST(int depth) const override;
 
 protected:
-	node *statement_;
+	const node *statement_;
 };
 
 class case_node : public case_default_node {
 public:
-	case_node(node *statement , node *constant_expression) : 
-		case_default_node(statement) , constant_expression_(constant_expression){}
+	case_node(const YYLTYPE&loc , const node *statement , const node *constant_expression) : 
+		case_default_node(loc , statement) , constant_expression_(constant_expression){}
 	~case_node() {
 		if(constant_expression_ != nullptr) delete constant_expression_;
 	}
@@ -47,7 +51,7 @@ public:
 	void printAST(int depth) const override;
 
 private:
-	node *constant_expression_;
+	const node *constant_expression_;
 };
 
 

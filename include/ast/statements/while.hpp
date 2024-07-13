@@ -5,8 +5,10 @@
 
 class while_node : public node {
 public:
-	while_node(node *expression , node *statement) :
+	while_node(const YYLTYPE&loc , const node *expression , const node *statement) :
+		node(loc),
 		expression_(expression) , statement_(statement){}
+
 	~while_node() {
 		if(expression_ != nullptr) delete expression_;
 		if(statement_ != nullptr) delete statement_;
@@ -15,26 +17,18 @@ public:
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
-private:
-	node *expression_;
-	node *statement_;
+protected:
+	const node *expression_;
+	const node *statement_;
 };
 
-class do_while_node : public node {
+class do_while_node : public while_node {
 public:
-	do_while_node(node *statement , node *expression) :
-		statement_(statement) , expression_(expression){}
-	~do_while_node() {
-		if(expression_ != nullptr) delete expression_;
-		if(statement_ != nullptr) delete statement_;
-	}
+	do_while_node(const YYLTYPE&loc , const node *statement , const node *expression) :
+		while_node(loc , expression , statement){}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
-
-private:
-	node *statement_;
-	node *expression_;
 };
 
 #endif

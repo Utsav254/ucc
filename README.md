@@ -13,6 +13,7 @@ Things to consider:
 
 Things to ammend later:
     - exit code on errors should be reconsidered
+    - locations: handle how nodelist->pushback handles location ...
 
 
 

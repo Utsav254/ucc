@@ -5,7 +5,8 @@
 
 class assn_op : public node {
 public:
-	assn_op(node *unary_expression , node *assignment_expression):
+	assn_op(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression):
+		node(loc),
 		unary_expression_(unary_expression),
 		assignment_expression_(assignment_expression) {}
 
@@ -15,14 +16,14 @@ public:
 	}
 
 protected: 
-	node *unary_expression_;
-	node *assignment_expression_;
+	const node *unary_expression_;
+	const node *assignment_expression_;
 };
 
 class equals_assn : public assn_op {
 public:
-	equals_assn(node *unary_expression , node *assignment_expression) : 
-		assn_op(unary_expression , assignment_expression){}
+	equals_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
+		assn_op(loc , unary_expression , assignment_expression){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -30,8 +31,8 @@ public:
 
 class mul_assn : public assn_op {
 public:
-	mul_assn(node *unary_expression , node *assignment_expression) : 
-		assn_op(unary_expression , assignment_expression){}
+	mul_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
+		assn_op(loc , unary_expression , assignment_expression){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -39,8 +40,8 @@ public:
 
 class div_assn : public assn_op {
 public:
-	div_assn(node *unary_expression , node *assignment_expression) : 
-		assn_op(unary_expression , assignment_expression){}
+	div_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
+		assn_op(loc , unary_expression , assignment_expression){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -48,8 +49,8 @@ public:
 
 class modu_assn : public assn_op {
 public:
-	modu_assn(node *unary_expression , node *assignment_expression) : 
-		assn_op(unary_expression , assignment_expression){}
+	modu_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
+		assn_op(loc , unary_expression , assignment_expression){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -57,8 +58,8 @@ public:
 
 class add_assn : public assn_op {
 public:
-	add_assn(node *unary_expression , node *assignment_expression) : 
-		assn_op(unary_expression , assignment_expression){}
+	add_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
+		assn_op(loc , unary_expression , assignment_expression){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -66,8 +67,8 @@ public:
 
 class sub_assn : public assn_op {
 public:
-	sub_assn(node *unary_expression , node *assignment_expression) : 
-		assn_op(unary_expression , assignment_expression){}
+	sub_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
+		assn_op(loc , unary_expression , assignment_expression){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -75,8 +76,8 @@ public:
 
 class left_assn : public assn_op {
 public:
-	left_assn(node *unary_expression , node *assignment_expression) : 
-		assn_op(unary_expression , assignment_expression){}
+	left_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
+		assn_op(loc , unary_expression , assignment_expression){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -84,8 +85,8 @@ public:
 
 class right_assn : public assn_op {
 public:
-	right_assn(node *unary_expression , node *assignment_expression) : 
-		assn_op(unary_expression , assignment_expression){}
+	right_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
+		assn_op(loc , unary_expression , assignment_expression){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -93,8 +94,8 @@ public:
 
 class and_assn : public assn_op {
 public:
-	and_assn(node *unary_expression , node *assignment_expression) : 
-		assn_op(unary_expression , assignment_expression){}
+	and_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
+		assn_op(loc , unary_expression , assignment_expression){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -102,8 +103,8 @@ public:
 
 class xor_assn : public assn_op {
 public:
-	xor_assn(node *unary_expression , node *assignment_expression) : 
-		assn_op(unary_expression , assignment_expression){}
+	xor_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
+		assn_op(loc , unary_expression , assignment_expression){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -111,8 +112,8 @@ public:
 
 class or_assn : public assn_op {
 public:
-	or_assn(node *unary_expression , node *assignment_expression) : 
-		assn_op(unary_expression , assignment_expression){}
+	or_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
+		assn_op(loc , unary_expression , assignment_expression){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -120,7 +121,7 @@ public:
 
 class expression_list: public nodelist {
 public:
-	expression_list(node *first_node) : nodelist(first_node){}
+	expression_list(const YYLTYPE& loc , node *first_node) : nodelist(loc , first_node){}
 	
 	void printAST(int depth) const override;
 };
