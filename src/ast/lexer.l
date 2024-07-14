@@ -93,7 +93,7 @@ L?'(\\.|[^\\'\n])+'	{ yylval.letter_char = extract_char_value(yytext); return(CH
 L?\"(\\.|[^\\"\n])*\"	{ yylval.string = new std::string(yytext); return(STRING_LITERAL); }
 
 L?\"[^\"\n]*$			{	
-							errors::add_err(new error("unterminated string" , true)); 
+							errors::add_err(new error(yylloc , "unterminated string" , true)); 
 							yylval.string = new std::string(yytext); 
 							return(STRING_LITERAL); 
 						}

@@ -2,8 +2,10 @@
 #define ERROR_HPP
 
 #include <string>
+#include <fstream>
 
 #include "ast/node.hpp"
+#include "ast/locations.hpp"
 #include "interm_repr/interm_repr.hpp"
 
 extern node *rootnode;
@@ -11,26 +13,29 @@ extern IR *ir;
 
 class error {
 public:
-	error(std::string msg , bool is_warning) : 
-		message_(msg) , is_warning_(is_warning){}
+	error(const YYLTYPE&loc, const std::string msg , const bool is_warning) : 
+		message_(msg),
+		is_warning_(is_warning) , loc_(loc){}
+
 	~error() = default;
 
-	void emit_err();
-	bool check_warning() {return is_warning_;}
+	void emit_err(std::ifstream& in) const ;
+	bool check_warning() const {return is_warning_;}
 private:
-	std::string message_;
-	bool is_warning_;
+	const std::string message_;
+	const bool is_warning_;
+	const YYLTYPE loc_;
 };
 
 
 namespace errors {
 	
-	void add_err(error *err);
+	void add_err(const error *err);
 	int get_err_count();
-	void emit_all_err();
+	void emit_all_err(std::ifstream& in);
 	
 	//---- fatal functions -----//
-	void die(std::string errmsg);
+	void die(const std::string errmsg);
 	void cleanup();
 }
 

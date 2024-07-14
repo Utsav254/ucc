@@ -11,11 +11,9 @@ struct YYLTYPE;
 class node {
 public:
 
-	node(const YYLTYPE& loc) : _loc(new YYLTYPE(loc)) {}
+	node(const YYLTYPE& loc) : loc_(loc) {}
 
-	virtual ~node() {
-		if(_loc != nullptr) delete _loc;
-	};
+	virtual ~node() {};
 
 	virtual void generateIR() const = 0;
 
@@ -42,7 +40,7 @@ public:
 	//
 	//--possibly some kind of search or iterate function?
 protected:
-	const YYLTYPE *_loc;
+	const YYLTYPE loc_;
 };
 
 class nodelist : public node {

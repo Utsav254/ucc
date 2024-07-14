@@ -34,7 +34,9 @@ int main(int argc , char **argv) {
 	//perform type checking and constant folding of AST
 	
 	//ready to check for errors:
-	errors::emit_all_err();
+	std::ifstream temp(cliargs.sourcepath);
+	errors::emit_all_err(temp);
+
 	if(errors::get_err_count()) {
 		errors::die("got errors - will terminate compilation");
 	}

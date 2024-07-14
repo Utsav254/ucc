@@ -10,6 +10,7 @@ Things to consider:
         - function stack frame
         - return type
     - add support for multi line string declaration
+    - use c strings in some places ... const char *s for string literals speed optimisation?
 
 Things to ammend later:
     - exit code on errors should be reconsidered
