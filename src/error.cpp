@@ -64,7 +64,7 @@ namespace errors{
 	void die(std::string message) {
 		std::cerr << message << std::endl;
 		cleanup();
-		exit(0);
+		exit(1);
 	}
 
 	void cleanup() {

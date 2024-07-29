@@ -2,19 +2,29 @@
 A simple c99 compiler.
 
 Things to consider:
-    - global vars need fixing
-    - better type system: const string referencing?
-    - smart pointers?
-    - might have to add a function table which hold function name and function info:
-        - function trace
-        - function stack frame
-        - return type
-    - add support for multi line string declaration
-    - use c strings in some places ... const char *s for string literals speed optimisation?
+
+    - the use of the { token marks the start of a scope
+        - create a temp scope stack to manage scopes while scanning and parsing ... scopes can be unnamed ...
+        - further type checking will be carried later anyways
+        - useful to sorting errors such as :
+
+            typedef int i32;
+            i32 i32 = 5;
+                ~~~ exception added for this case since the previous token was a typename 
+                    safe to assume that this is intended to be an identifier
+
+            return i32;
+                   ~~~ however here this would be a type name which ends up throwing an error ...
+                       might be useful to maintain a set of variables which are in scope;
+
+    - the use of } marks the end of the scope
 
 Things to ammend later:
     - exit code on errors should be reconsidered
-    - locations: handle how nodelist->pushback handles location ...
+    - multi line string
 
+Performance:
+    - string use in types, is there a better way?
+    - better hashes for std::maps ?
 
 

@@ -1,4 +1,4 @@
-#include "ast/struct_union/struct_union_member.hpp"
+#include "ast/struct_union_enum/struct_union_member.hpp"
 #include <iostream>
 
 void specifier_qualifier_list::printAST(int depth) const {

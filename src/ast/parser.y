@@ -49,10 +49,11 @@
 %type <Node> type_name abstract_declarator direct_abstract_declarator initializer statement labeled_statement
 %type <Node> compound_statement expression_statement selection_statement iteration_statement jump_statement
 %type <Node> storage_class_specifier block_item type_qualifier function_specifier struct_or_union_specifier struct_or_union
+%type <Node> designation designator
 
 %type <Nodes> declaration_list init_declarator_list translation_unit parameter_type_list parameter_list argument_expression_list 
 %type <Nodes> block_item_list declaration_specifiers expression identifier_list struct_declaration_list specifier_qualifier_list 
-%type <Nodes> initializer_list type_qualifier_list pointer enumerator_list struct_declarator_list
+%type <Nodes> initializer_list type_qualifier_list pointer enumerator_list struct_declarator_list designator_list
 
 %type <number_int> INT_CONSTANT
 %type <number_float> FLOAT_CONSTANT
@@ -64,7 +65,7 @@
 %%
 
 primary_expression
-	: IDENTIFIER { $$ = new identifier(@$ , *$1); delete $1;}
+	: IDENTIFIER { $$ = new identifier(@$ , *$1); delete $1; }
 	| INT_CONSTANT { $$ = new int_constant(@$ , $1); }
 	| FLOAT_CONSTANT { $$ = new float_constant(@$ , $1); }
 	| CHAR_CONSTANT { $$ = new char_constant(@$ , $1); }
@@ -77,15 +78,12 @@ postfix_expression
 	| postfix_expression '[' expression ']' { $$ = new array_index(@$ , $1 , $3); }
 	| postfix_expression '(' ')' { $$ = new function_call(@$ , $1); }
 	| postfix_expression '(' argument_expression_list ')' { $$ = new function_call_arg(@$ , $1 , $3); }
-
 	| postfix_expression '.' IDENTIFIER { $$ = new dot_member_op(@$ , $1 , new identifier(@3 , *$3)); delete $3; }
 	| postfix_expression PTR_OP IDENTIFIER {$$ = new ptr_member_op(@$ , $1 , new identifier(@3 , *$3)); delete $3; }
-
 	| postfix_expression INC_OP { $$ = new postfix_incr(@$ , $1); }
 	| postfix_expression DEC_OP { $$ = new postfix_decr(@$ , $1); }
-
-	| '(' type_name ')' '{' initializer_list '}'
-	| '(' type_name ')' '{' initializer_list ',' '}'
+	| '(' type_name ')' '{' initializer_list '}' { $$ = new cast_compound_literal(@$ , $2 , $5); }
+	| '(' type_name ')' '{' initializer_list ',' '}' { $$ = new cast_compound_literal(@$ , $2 , $5); }
 	;
 
 argument_expression_list
@@ -99,18 +97,17 @@ unary_expression
 	| DEC_OP unary_expression { $$ = new unary_decr(@$ , $2); }
 	| SIZEOF unary_expression { $$ = new sizeof_node(@$ , $2); }
 	| SIZEOF '(' type_name ')' { $$ = new sizeof_node_type(@$ , $3); }
-
-	| '&' cast_expression {/*arithmetic after casting... requires type checking*/}
-	| '*' cast_expression
-	| '+' cast_expression
-	| '-' cast_expression
-	| '~' cast_expression
-	| '!' cast_expression
+	| '&' cast_expression { $$ = new unary_addressof(@$ , $2); }
+	| '*' cast_expression { $$ = new unary_pointer_deref(@$ , $2); }
+	| '+' cast_expression { $$ = new unary_positive(@$ , $2); }
+	| '-' cast_expression { $$ = new unary_negative(@$ , $2); }
+	| '~' cast_expression { $$ = new unary_bitwise_not(@$ , $2); }
+	| '!' cast_expression { $$ = new unary_logical_not(@$ , $2); }
 	;
 
 cast_expression
 	: unary_expression { $$ = $1; }
-	| '(' type_name ')' cast_expression { }
+	| '(' type_name ')' cast_expression { $$ = new cast_expression(@$ , $2 , $4); }
 	;
 
 multiplicative_expression
@@ -290,21 +287,21 @@ struct_declarator
 	;
 
 enum_specifier
-	: ENUM '{' enumerator_list '}'
-	| ENUM IDENTIFIER '{' enumerator_list '}'
-	| ENUM '{' enumerator_list ',' '}'
-	| ENUM IDENTIFIER '{' enumerator_list ',' '}'
-	| ENUM IDENTIFIER
+	: ENUM '{' enumerator_list '}' { $$ = new enum_spec(@$ , $3); }
+	| ENUM IDENTIFIER '{' enumerator_list '}' { $$ = new enum_spec_id(@$ , new identifier(@2 , *$2) , $4); delete $2; }
+	| ENUM '{' enumerator_list ',' '}' { $$ = new enum_spec(@$ , $3); }
+	| ENUM IDENTIFIER '{' enumerator_list ',' '}' { $$ = new enum_spec_id(@$ , new identifier(@2 , *$2) , $4); delete $2; }
+	| ENUM IDENTIFIER { $$ = new enum_declaration(@$ , new identifier(@2 , *$2)); delete $2; }
 	;
 
 enumerator_list
-	: enumerator
-	| enumerator_list ',' enumerator
+	: enumerator { $$ = new enumerator_list(@$ , $1); }
+	| enumerator_list ',' enumerator { $1->pushback($3); $$ = $1; }
 	;
 
 enumerator
-	: IDENTIFIER
-	| IDENTIFIER '=' constant_expression
+	: IDENTIFIER { $$ = new enumerator(@$ , new identifier(@1 , *$1) ); delete $1; }
+	| IDENTIFIER '=' constant_expression { $$ = new enumerator_const_expr(@1 , new identifier(@1 , *$1) , $3); delete $1; }
 	;
 
 type_qualifier
@@ -343,9 +340,8 @@ direct_declarator
 pointer
 	: '*' { $$ = new pointer_list(@$ , new pointer(@$) ); }
 	| '*' pointer { $2->pushback( new pointer(@$) ); $$ = $2; }
-
-	| '*' type_qualifier_list
-	| '*' type_qualifier_list pointer
+	| '*' type_qualifier_list { $$ = new pointer_list(@$ , $2); }
+	| '*' type_qualifier_list pointer { $3->pushback($2); $$ = $3; }
 	;
 
 type_qualifier_list
@@ -377,8 +373,8 @@ identifier_list
 	;
 
 type_name
-	: specifier_qualifier_list
-	| specifier_qualifier_list abstract_declarator
+	: specifier_qualifier_list { $$ = new type_name(@$ , $1); }
+	| specifier_qualifier_list abstract_declarator { $$ = new type_name_abstract(@$ , $1 , $2); }
 	;
 
 abstract_declarator
@@ -402,30 +398,29 @@ direct_abstract_declarator
 	;
 
 initializer
-	: assignment_expression
-	| '{' initializer_list '}'
-	| '{' initializer_list ',' '}' { /*array initialiser */}
+	: assignment_expression { $$ = $1; }
+	| '{' initializer_list '}' { $$ = new initialiser(@$ , $2); }
+	| '{' initializer_list ',' '}' { $$ = new initialiser(@$ , $2); }
 	;
 
 initializer_list
-	: initializer
-	| designation initializer
-	| initializer_list ',' initializer
-	| initializer_list ',' designation initializer
+	: initializer { $$ = new initialiser_list(@$ , $1); }
+	| designation { $$ = new initialiser_list(@$ , $1); }
+	| initializer_list ',' initializer { $1->pushback($3); $$ = $1; }
+	| initializer_list ',' designation { $1->pushback($3); $$ = $1; }
 	;
 
 designation
-	: designator_list '='
-	;
+	: designator_list '=' initializer { $$ = new designation(@$ , $1 , $3); }
 
 designator_list
-	: designator
-	| designator_list designator
+	: designator { $$ = new designator_list(@$ , $1); }
+	| designator_list designator { $1->pushback($2); $$ = $1; }
 	;
 
 designator
-	: '[' constant_expression ']'
-	| '.' IDENTIFIER
+	: '[' constant_expression ']' { $$ = new designator_constant_expr(@$ , $2); }
+	| '.' IDENTIFIER { $$ = new designator_identifier(@$ , new identifier(@2 , *$2)); delete $2; }
 	;
 
 statement
@@ -514,7 +509,8 @@ declaration_list
 %%
 
 void yyerror(char const *s) {
-	printf("in yyerror found at line no: %d" , yylineno);
+	std::cout << "got error at line: " << yylineno << std::endl;
+	errors::add_err(new error(yylloc , s , false)); 
 	errors::die(s);
 }
 

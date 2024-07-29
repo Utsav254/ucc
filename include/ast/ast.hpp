@@ -6,12 +6,15 @@
 //miscellanious stuff
 #include "misc/primaries.hpp"
 #include "misc/misc.hpp"
+#include "misc/initialiser_designator.hpp"
 
 //declaration stuff
+#include "decls/casting.hpp"
 #include "decls/specifier_qualifiers.hpp"
 #include "decls/declarator.hpp"
 #include "decls/declaration.hpp"
 #include "decls/pointer.hpp"
+#include "decls/type_name.hpp"
 
 //functions:
 #include "functions/function_definition.hpp"
@@ -24,6 +27,7 @@
 #include "arithmetic/rl_operators.hpp"
 #include "arithmetic/assign_op.hpp"
 #include "arithmetic/cond_expression.hpp"
+#include "arithmetic/unary.hpp"
 
 //array:
 #include "arrays/array_definition.hpp"
@@ -38,9 +42,11 @@
 #include "statements/for.hpp"
 
 //struct and unions:
-#include "struct_union/struct_union.hpp"
-#include "struct_union/struct_union_decls.hpp"
-#include "struct_union/struct_union_member.hpp"
+#include "struct_union_enum/struct_union.hpp"
+#include "struct_union_enum/struct_union_decls.hpp"
+#include "struct_union_enum/struct_union_member.hpp"
+#include "struct_union_enum/enum_spec.hpp"
+#include "struct_union_enum/enumerator.hpp"
 
 
 #endif

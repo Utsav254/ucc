@@ -1,4 +1,4 @@
-#include "ast/struct_union/struct_union_decls.hpp"
+#include "ast/struct_union_enum/struct_union_decls.hpp"
 #include <iostream>
 
 void struct_declaration::generateIR() const {
