@@ -32,7 +32,7 @@ void sizeof_node::printAST(int depth) const {
         std::cout << "│\t";
     }
     std::cout << "├────sizeof" << std::endl;
-	if(unary_expression_ != nullptr) delete unary_expression_;
+	if(unary_expression_ != nullptr) unary_expression_->printAST(depth + 1);
 }
 
 void sizeof_node_type::generateIR() const {

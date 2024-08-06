@@ -43,6 +43,18 @@ add_custom_target(gdb
     WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
 )
 
+add_custom_target(cleanall
+    COMMAND ${CMAKE_COMMAND} -E rm -r ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_outputs/
+	COMMENT "Cleaning Up"
+)
+
+
 # Clean custom target
-set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/ast/lexer.yy.cpp;${CMAKE_CURRENT_SOURCE_DIR}/include/parser.tab.hpp;${CMAKE_CURRENT_SOURCE_DIR}/src/ast/parser.tab.cpp")
+set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES 
+    "
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ast/lexer.yy.cpp;
+	${CMAKE_CURRENT_SOURCE_DIR}/include/parser.tab.hpp;
+	${CMAKE_CURRENT_SOURCE_DIR}/src/ast/parser.tab.cpp;
+	"
+)
 
