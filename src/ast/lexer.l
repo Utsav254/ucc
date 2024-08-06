@@ -163,7 +163,6 @@ int check_type(const char *s) {
 	//if it is an identifier then this should be the case where it is a struct identifier identifier
 	//this helps with typedefs where the alias is the same as the typename
 	if (prev == STRUCT || prev == IDENTIFIER || prev == ENUM || prev == TYPE_NAME) {
-		std::cout << "early return on check id: " << s << std::endl;
 		prev = IDENTIFIER;
 		return IDENTIFIER;
 	}
@@ -172,7 +171,6 @@ int check_type(const char *s) {
 		return IDENTIFIER;
 	}
 	else {
-		std::cout << "will return typename previous token: "  << prev << std::endl;
 		prev = TYPE_NAME;
 		return TYPE_NAME;
 	}

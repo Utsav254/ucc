@@ -47,6 +47,10 @@ void sizeof_node_type::printAST(int depth) const {
 	if(type_name_ != nullptr) type_name_->printAST(depth + 1);
 }
 
+void translation_unit::generateIR() const {
+
+}
+
 void translation_unit::printAST(int depth) const {
 	for(int i = 0 ; i < depth-1 ; i++){
 		std::cout << "│\t";
@@ -55,4 +59,15 @@ void translation_unit::printAST(int depth) const {
 	for(int i = 0 ; i < (int)nodes_.size() ; i++) {
 		if(nodes_[i] != nullptr) nodes_[i]->printAST(depth + 1);
 	}
+}
+
+void unamed_empty_declaration::generateIR() const {
+
+}
+
+void unamed_empty_declaration::printAST(int depth) const {
+for(int i = 0 ; i < depth-1 ; i++){
+        std::cout << "│\t";
+    }
+    std::cout << "├────unamed_empty_declaration" << std::endl;
 }

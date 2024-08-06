@@ -26,6 +26,20 @@ void parameter_full_decl::printAST(int depth) const {
 	if(declarator_ != nullptr) declarator_->printAST(depth + 1);
 }
 
+
+void parameter_decl_abstract::generateIR() const {
+
+}
+
+void parameter_decl_abstract::printAST(int depth) const {
+	for(int i = 0 ; i < depth-1 ; i++){
+		std::cout << "│\t";
+	}
+	std::cout << "├────parameter declaration_abstract" << std::endl;
+	if(declaration_specifier_ != nullptr) declaration_specifier_->printAST(depth + 1);
+	if(abstract_declarator_ != nullptr) abstract_declarator_->printAST(depth + 1);
+}
+
 void parameter_list::generateIR() const {
 
 }

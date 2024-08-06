@@ -37,6 +37,23 @@ private:
 	const node *declarator_;
 };
 
+class parameter_decl_abstract : public parameter_decl {
+public:
+	parameter_decl_abstract(const YYLTYPE& loc , const node *declaration_specifier , const node *abstract_declarator) :
+		parameter_decl(loc , declaration_specifier),
+		abstract_declarator_(abstract_declarator) {}
+
+	~parameter_decl_abstract() {
+		if(abstract_declarator_ != nullptr) delete abstract_declarator_;
+	}
+
+	void generateIR() const override;
+	void printAST(int depth) const override;
+
+private: 
+	const node *abstract_declarator_;
+};
+
 class parameter_list : public nodelist {
 public:
 	parameter_list(const YYLTYPE& loc , node *first_node) : nodelist(loc , first_node){}

@@ -59,9 +59,18 @@ private:
 class translation_unit : public nodelist {
 public:
 	translation_unit(const YYLTYPE& loc , node *first_node) : nodelist(loc , first_node){}
-
+	
+	void generateIR() const override;
 	void printAST(int depth) const override;
 };
 
+class unamed_empty_declaration : public node {
+public:
+	unamed_empty_declaration(const YYLTYPE& loc) :
+		node(loc) {}
+
+	void generateIR() const override;	
+	void printAST(int depth) const override;
+};
 
 #endif

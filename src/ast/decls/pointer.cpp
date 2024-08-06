@@ -10,8 +10,8 @@ void declarator_pointer::printAST(int depth) const {
         std::cout << "│\t";
     }
     std::cout << "├────declarator_pointer" << std::endl;
-	if(direct_declarator_ != nullptr) direct_declarator_->printAST(depth + 1);
 	if(pointer_ != nullptr) pointer_->printAST(depth + 1);
+	if(direct_declarator_ != nullptr) direct_declarator_->printAST(depth + 1);
 }
 
 void pointer::generateIR() const {

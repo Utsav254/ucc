@@ -60,6 +60,23 @@
 %type <letter_char> CHAR_CONSTANT
 %type <string> IDENTIFIER STRING_LITERAL TYPE_NAME
 
+%left ','  // Comma operator
+%left OR_OP
+%left AND_OP
+%left '|'
+%left '^'
+%left '&'
+%left '<' '>' LE_OP GE_OP
+%left EQ_OP NE_OP
+%left '+' '-'
+%left '*' '/' '%'
+%left RIGHT_OP LEFT_OP
+%right INC_OP DEC_OP
+%right PTR_OP '.'
+%right '=' MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN SUB_ASSIGN AND_ASSIGN OR_ASSIGN XOR_ASSIGN RIGHT_ASSIGN LEFT_ASSIGN
+%right SIZEOF
+
+
 %start ROOT
 
 %%
@@ -89,7 +106,7 @@ postfix_expression
 argument_expression_list
 	: assignment_expression { $$ = new argument_expression_list(@$ , $1); }
 	| argument_expression_list ',' assignment_expression { $1->pushback($3); $$ = $1; }
-	;
+	
 
 unary_expression
 	: postfix_expression { $$ = $1; }
@@ -327,14 +344,11 @@ direct_declarator
 	| direct_declarator '(' parameter_type_list ')' { $$ = new function_declarator_param(@$ , $1 , $3); }
 	| direct_declarator '(' identifier_list ')' { $$ = new function_declarator_id_list(@$ , $1 , $3); }
 
-	| direct_declarator '[' '*' ']' { /*wierd c99 feature for vari array lengths in function forward declarations*/}
-	| '(' declarator ')' { /*function pointer stuff*/}
+	| '(' declarator ')' { $$ = new function_ptr(@$ , $2); }
 
-	| direct_declarator '[' type_qualifier_list assignment_expression ']' {/*these are used for function prototypes*/}
-	| direct_declarator '[' type_qualifier_list ']' { }
-	| direct_declarator '[' STATIC type_qualifier_list assignment_expression ']'
-	| direct_declarator '[' type_qualifier_list STATIC assignment_expression ']'
-	| direct_declarator '[' type_qualifier_list '*' ']'
+	| direct_declarator '[' type_qualifier_list assignment_expression ']'
+	{ $$ = new array_definition_type_qual_size(@$ , $1 , $3 , $4); }
+	| direct_declarator '[' type_qualifier_list ']' { $$ = new array_definition_type_qual(@$ , $1 , $3); }
 	;
 
 pointer
@@ -363,8 +377,7 @@ parameter_list
 parameter_declaration
 	: declaration_specifiers declarator { $$ = new parameter_full_decl(@$ , $1 , $2); }
 	| declaration_specifiers { $$ = new parameter_decl(@$ , $1); /*used if only the function trace needs to be given*/}
-
-	| declaration_specifiers abstract_declarator {/*low priority feature*/}
+	| declaration_specifiers abstract_declarator { $$ = new parameter_decl_abstract(@$ , $1 , $2); }
 	;
 
 identifier_list
@@ -378,23 +391,21 @@ type_name
 	;
 
 abstract_declarator
-	: pointer
-	| direct_abstract_declarator
-	| pointer direct_abstract_declarator
+	: pointer { $$ = $1; }
+	| direct_abstract_declarator { $$ = new abstract_declarator(@$ , $1); }
+	| pointer direct_abstract_declarator { $$ = new abstract_declarator_pointer(@$ , $1 , $2); }
 	;
 
 direct_abstract_declarator
-	: '(' abstract_declarator ')' { /*function pointers stuff ... low priority*/}
-	| '[' ']'
-	| '[' assignment_expression ']'
-	| direct_abstract_declarator '[' ']'
-	| direct_abstract_declarator '[' assignment_expression ']'
-	| '[' '*' ']'
-	| direct_abstract_declarator '[' '*' ']'
-	| '(' ')'
-	| '(' parameter_type_list ')'
-	| direct_abstract_declarator '(' ')'
-	| direct_abstract_declarator '(' parameter_type_list ')'
+	: '[' ']' { $$ = new unamed_empty_array(@$); }
+	| '[' assignment_expression ']' { $$ = new unamed_empty_array_size(@$ , $2); }
+	| direct_abstract_declarator '[' ']' { $$ = new array_decl_abstract(@$ , $1); }
+	| direct_abstract_declarator '[' assignment_expression ']' { $$ = new array_decl_abstract_size(@$ , $1 , $3); }
+	| '(' ')' { $$ = new unamed_empty_declaration(@$); }
+	| '(' parameter_type_list ')' { $$ = new unamed_abstract_function_parameters(@$ , $2); }
+	| direct_abstract_declarator '(' ')' { $$ = new abstract_function(@$ , $1); }
+	| direct_abstract_declarator '(' parameter_type_list ')' { $$ = new abstract_function_parameters(@$ , $1 , $3); }
+	| '(' abstract_declarator ')' { $$ = new abstract_function_pointer(@$ , $2); }
 	;
 
 initializer
