@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "cli.hpp"
-#include "context.hpp"
+#include "context/context.hpp"
 #include "error.hpp"
 #include "interm_repr/interm_repr.hpp"
 #include "ast/node.hpp"

@@ -6,7 +6,7 @@
 	extern "C" int fileno(FILE *stream);
 
 	#include "parser.tab.hpp"
-	#include "context.hpp"
+	#include "context/context.hpp"
 	#include <stdio.h>
 	#include <string.h>
 	#include <string>

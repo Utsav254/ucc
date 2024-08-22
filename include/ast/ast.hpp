@@ -22,7 +22,6 @@
 #include "functions/parameter.hpp"
 #include "functions/function_declarator.hpp"
 #include "functions/function_call.hpp"
-#include "functions/function_pointer.hpp"
 #include "functions/abstract_functions.hpp"
 
 //arithmetic:

@@ -51,21 +51,6 @@ private:
 	const nodelist * param_type_list_;
 };
 
-class abstract_function_pointer : public node {
-public:
-	abstract_function_pointer( const YYLTYPE& loc , const node *abstract_decl) :
-		node(loc) , abstract_decl_(abstract_decl) {}
-
-	~abstract_function_pointer() {
-		if(abstract_decl_ != nullptr) delete abstract_decl_;
-	}
-
-	void generateIR() const override;
-	void printAST(int depth) const override;
-
-private:
-	const node *abstract_decl_;
-};
 
 #endif
 

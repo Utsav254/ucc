@@ -30,6 +30,8 @@
 %locations
 %define api.location.type {YYLTYPE}
 
+%define parse.error detailed
+
 %token IDENTIFIER INT_CONSTANT CHAR_CONSTANT FLOAT_CONSTANT STRING_LITERAL SIZEOF
 %token PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
 %token AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
@@ -344,7 +346,7 @@ direct_declarator
 	| direct_declarator '(' parameter_type_list ')' { $$ = new function_declarator_param(@$ , $1 , $3); }
 	| direct_declarator '(' identifier_list ')' { $$ = new function_declarator_id_list(@$ , $1 , $3); }
 
-	| '(' declarator ')' { $$ = new function_ptr(@$ , $2); }
+	| '(' declarator ')' { $$ = $2; }
 
 	| direct_declarator '[' type_qualifier_list assignment_expression ']'
 	{ $$ = new array_definition_type_qual_size(@$ , $1 , $3 , $4); }
@@ -353,9 +355,9 @@ direct_declarator
 
 pointer
 	: '*' { $$ = new pointer_list(@$ , new pointer(@$) ); }
-	| '*' pointer { $2->pushback( new pointer(@$) ); $$ = $2; }
-	| '*' type_qualifier_list { $$ = new pointer_list(@$ , $2); }
-	| '*' type_qualifier_list pointer { $3->pushback($2); $$ = $3; }
+	| '*' pointer { $2->pushback( new pointer(@1) ); $$ = $2; }
+	| '*' type_qualifier_list { $$ = new pointer_list(@$ , new pointer(@1)); $$->pushback($2); }
+	| '*' type_qualifier_list pointer { $$ = new pointer_list(@$ , new pointer(@1)); $$->pushback($2); $$->pushback($3); }
 	;
 
 type_qualifier_list
@@ -405,7 +407,7 @@ direct_abstract_declarator
 	| '(' parameter_type_list ')' { $$ = new unamed_abstract_function_parameters(@$ , $2); }
 	| direct_abstract_declarator '(' ')' { $$ = new abstract_function(@$ , $1); }
 	| direct_abstract_declarator '(' parameter_type_list ')' { $$ = new abstract_function_parameters(@$ , $1 , $3); }
-	| '(' abstract_declarator ')' { $$ = new abstract_function_pointer(@$ , $2); }
+	| '(' abstract_declarator ')' { $$ = $2; }
 	;
 
 initializer
@@ -520,7 +522,7 @@ declaration_list
 %%
 
 void yyerror(char const *s) {
-	std::cout << "got error at line: " << yylineno << std::endl;
+	std::cout << "got error at line: " << yylloc.first_line << ":" << yylloc.first_column << std::endl;
 	errors::add_err(new error(yylloc , s , false)); 
 	errors::die(s);
 }

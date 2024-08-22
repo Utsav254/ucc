@@ -39,15 +39,3 @@ void abstract_function_parameters::printAST(int depth) const {
 
 }
 
-void abstract_function_pointer::generateIR() const {
-	
-}
-
-void abstract_function_pointer::printAST(int depth) const {
-	for(int i = 0 ; i < depth-1 ; i++){
-        std::cout << "│\t";
-    }
-    std::cout << "├────abstract_function_pointer" << std::endl;
-	if(abstract_decl_ != nullptr) abstract_decl_->printAST(depth + 1);
-}
-
