@@ -18,6 +18,6 @@ void nodelist::printAST(int depth) const {
 	}
 }
 
-void nodelist::pushback(node *next) {
-	nodes_.push_back(next);
+void nodelist::pushback(std::unique_ptr<node> next) {
+	nodes_.push_back(std::move(next));
 }

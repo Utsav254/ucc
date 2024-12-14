@@ -68,7 +68,6 @@ namespace errors{
 	}
 
 	void cleanup() {
-		if (root_node != nullptr) delete root_node;
 		if (ir != nullptr) delete ir;
 		context::free();
 		

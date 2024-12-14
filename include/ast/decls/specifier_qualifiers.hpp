@@ -1,16 +1,14 @@
-#ifndef TYPE_SPECIFIER_HPP
-#define TYPE_SPECIFIER_HPP
-
+#pragma once
 #include "../node.hpp"
-
 
 class type_specifier : public node {
 public:
-	type_specifier(const YYLTYPE&loc , const std::string type_spec) :
+	type_specifier
+	(
+		const YYLTYPE&loc , const std::string& type_spec
+	):
 		node(loc),
 		type_spec_(type_spec) {}
-
-	~type_specifier(){};
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -23,11 +21,12 @@ private:
 
 class type_qualifier : public node {
 public:
-	type_qualifier(const YYLTYPE&loc , const std::string type_qual) :
+	type_qualifier
+	(
+		const YYLTYPE&loc , const std::string& type_qual
+	):
 		node(loc),
 		type_qual_(type_qual) {}
-
-	~type_qualifier(){};
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -40,11 +39,12 @@ private:
 
 class storage_class_specifier : public node {
 public:
-	storage_class_specifier(const YYLTYPE&loc , const std::string storage_class_spec) :
+	storage_class_specifier
+	(
+		const YYLTYPE&loc , const std::string& storage_class_spec
+	):
 		node(loc),
 		storage_class_spec_(storage_class_spec) {}
-
-	~storage_class_specifier(){};
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -61,7 +61,10 @@ private:
 
 class function_specifier : public node {
 public:
-	function_specifier(const YYLTYPE&loc , const std::string function_spec) :
+	function_specifier
+	(
+		const YYLTYPE&loc , const std::string& function_spec
+	):
 		node(loc),
 		function_spec_(function_spec) {}
 
@@ -78,7 +81,12 @@ private:
 
 class declaration_specifiers : public nodelist {
 public:
-	declaration_specifiers(const YYLTYPE&loc , node *first_node) : nodelist(loc , first_node){}
+	declaration_specifiers
+	(
+		const YYLTYPE&loc,
+		std::unique_ptr<node> first_node
+	):
+		nodelist(loc , std::move(first_node)){}
 
 	void printAST(int depth) const override;
 
@@ -94,10 +102,12 @@ public:
 
 class  type_qualifier_list: public nodelist {
 public:
-	type_qualifier_list(const YYLTYPE&loc , node *first_node) : nodelist(loc , first_node){}
+	type_qualifier_list
+	(
+		const YYLTYPE&loc , std::unique_ptr<node> first_node
+	):
+		nodelist(loc , std::move(first_node)){}
 
 	void printAST(int depth) const override;
 };
-
-#endif
 

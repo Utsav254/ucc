@@ -1,62 +1,66 @@
-#ifndef PARAMETER_HPP
-#define PARAMETER_HPP
-
+#pragma once
 #include "../node.hpp"
 
 class parameter_decl : public node {
 public:
-	parameter_decl(const YYLTYPE& loc , const node *declaration_specifier) :
+	parameter_decl
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> declaration_specifier
+	):
 		node(loc),
-		declaration_specifier_(declaration_specifier) {}
-
-	~parameter_decl() {
-		if(declaration_specifier_ != nullptr) delete declaration_specifier_;
-	}
+		declaration_specifier_(std::move(declaration_specifier)) {}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 protected:
-	const node *declaration_specifier_;
+	std::unique_ptr<node> declaration_specifier_;
 };
 
 class parameter_full_decl : public parameter_decl {
 public:
-	parameter_full_decl(const YYLTYPE& loc , const node *declaration_specifier , const node *declarator) :
-		parameter_decl(loc , declaration_specifier),
-		declarator_(declarator) {}
-
-	~parameter_full_decl() {
-		if(declarator_ != nullptr) delete declarator_;
-	}
+	parameter_full_decl
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> declaration_specifier,
+		std::unique_ptr<node> declarator
+	):
+		parameter_decl(loc , std::move(declaration_specifier)),
+		declarator_(std::move(declarator)) {}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private: 
-	const node *declarator_;
+	std::unique_ptr<node> declarator_;
 };
 
 class parameter_decl_abstract : public parameter_decl {
 public:
-	parameter_decl_abstract(const YYLTYPE& loc , const node *declaration_specifier , const node *abstract_declarator) :
-		parameter_decl(loc , declaration_specifier),
-		abstract_declarator_(abstract_declarator) {}
-
-	~parameter_decl_abstract() {
-		if(abstract_declarator_ != nullptr) delete abstract_declarator_;
-	}
+	parameter_decl_abstract
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> declaration_specifier,
+		std::unique_ptr<node> abstract_declarator
+	):
+		parameter_decl(loc , std::move(declaration_specifier)),
+		abstract_declarator_(std::move(abstract_declarator)) {}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private: 
-	const node *abstract_declarator_;
+	std::unique_ptr<node> abstract_declarator_;
 };
 
 class parameter_list : public nodelist {
 public:
-	parameter_list(const YYLTYPE& loc , node *first_node) : nodelist(loc , first_node){}
+	parameter_list
+	(
+		const YYLTYPE& loc , std::unique_ptr<node> first_node
+	):
+		nodelist(loc , std::move(first_node)){}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -64,19 +68,17 @@ public:
 
 class variadic_parameter : public node {
 public:
-	variadic_parameter(const YYLTYPE& loc , const nodelist *parameter_list):
+	variadic_parameter
+	(
+		const YYLTYPE& loc , std::unique_ptr<node> parameter_list
+	):
 		node(loc),
-		parameter_list_(parameter_list){}
-
-	~variadic_parameter() {
-		if(parameter_list_ != nullptr) delete parameter_list_;
-	}
+		parameter_list_(std::move(parameter_list)){}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	const nodelist *parameter_list_;
+	std::unique_ptr<node> parameter_list_;
 };
 
-#endif

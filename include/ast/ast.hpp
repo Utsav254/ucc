@@ -1,6 +1,4 @@
-#ifndef AST_HPP
-#define AST_HPP
-
+#pragma once
 #include "node.hpp"
 
 //miscellanious stuff
@@ -50,7 +48,4 @@
 #include "struct_union_enum/struct_union_member.hpp"
 #include "struct_union_enum/enum_spec.hpp"
 #include "struct_union_enum/enumerator.hpp"
-
-
-#endif
 

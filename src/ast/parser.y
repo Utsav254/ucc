@@ -4,8 +4,9 @@
 	#include "error.hpp"
 	#include <string>
 	#include <iostream>
+	#include <variant>
 
-    extern node *root_node;
+    extern std::unique_ptr<node> root_node;
     extern FILE *yyin;
 	extern int yylineno;
 
@@ -17,19 +18,25 @@
 	#include "ast/locations.hpp"
 }
 
-%union{
-  node         *Node;
-  nodelist     *Nodes;
-  char         letter_char;	
-  long         number_int;
-  double       number_float;
-  std::string  *string;
-  yytokentype  token;
+// Use std::variant for semantic values
+%define api.value.type {
+std::variant
+<
+    std::unique_ptr<node>, 
+    std::unique_ptr<nodelist>, 
+    char, 
+    long, 
+    double, 
+    std::unique_ptr<std::string>, 
+    yytokentype
+>
 }
 
+// Specify custom location handling
 %locations
 %define api.location.type {YYLTYPE}
 
+// Enable detailed error messages
 %define parse.error detailed
 
 %token IDENTIFIER INT_CONSTANT CHAR_CONSTANT FLOAT_CONSTANT STRING_LITERAL SIZEOF
@@ -84,438 +91,664 @@
 %%
 
 primary_expression
-	: IDENTIFIER { $$ = new identifier(@$ , *$1); delete $1; }
-	| INT_CONSTANT { $$ = new int_constant(@$ , $1); }
-	| FLOAT_CONSTANT { $$ = new float_constant(@$ , $1); }
-	| CHAR_CONSTANT { $$ = new char_constant(@$ , $1); }
-	| STRING_LITERAL { $$ = new string_literal(@$ , *$1); delete $1;}
-	| '(' expression ')' {$$ = $2;}
+	: IDENTIFIER
+	{std::get<std::unique_ptr<node>>($$) = std::make_unique<identifier>(@$ , std::move($1));}
+	| INT_CONSTANT
+	{$$ = std::make_unique<int_constant>(@$ , std::move($1));}
+	| FLOAT_CONSTANT
+	{$$ = std::make_unique<float_constant>(@$ , std::move($1));}
+	| CHAR_CONSTANT
+	{$$ = std::make_unique<char_constant>(@$ , std::move($1));}
+	| STRING_LITERAL
+	{$$ = std::make_unique<string_literal>(@$ , std::move($1));}
+	| '(' expression ')'
+	{$$ = std::move($2);}
 	;
 
 postfix_expression
-	: primary_expression { $$ = $1; }
-	| postfix_expression '[' expression ']' { $$ = new array_index(@$ , $1 , $3); }
-	| postfix_expression '(' ')' { $$ = new function_call(@$ , $1); }
-	| postfix_expression '(' argument_expression_list ')' { $$ = new function_call_arg(@$ , $1 , $3); }
-	| postfix_expression '.' IDENTIFIER { $$ = new dot_member_op(@$ , $1 , new identifier(@3 , *$3)); delete $3; }
-	| postfix_expression PTR_OP IDENTIFIER {$$ = new ptr_member_op(@$ , $1 , new identifier(@3 , *$3)); delete $3; }
-	| postfix_expression INC_OP { $$ = new postfix_incr(@$ , $1); }
-	| postfix_expression DEC_OP { $$ = new postfix_decr(@$ , $1); }
-	| '(' type_name ')' '{' initializer_list '}' { $$ = new cast_compound_literal(@$ , $2 , $5); }
-	| '(' type_name ')' '{' initializer_list ',' '}' { $$ = new cast_compound_literal(@$ , $2 , $5); }
+	: primary_expression
+	{$$ = std::move($1);}
+	| postfix_expression '[' expression ']'
+	{$$ = std::make_unique<array_index>(@$ , std::move($1) , std::move($3));}
+	| postfix_expression '(' ')'
+	{$$ = std::make_unique<function_call>(@$ , std::move($1));}
+	| postfix_expression '(' argument_expression_list ')'
+	{$$ = std::make_unique<function_call_arg>(@$ , std::move($1) , std::move($3));}
+	| postfix_expression '.' IDENTIFIER
+	{$$ = std::make_unique<dot_member_op>(@$ , std::move($1) , std::make_unique<identifier>(@3 , std::move($3)));}
+	| postfix_expression PTR_OP IDENTIFIER
+	{$$ = std::make_unique<ptr_member_op>(@$ , std::move($1) , std::make_unique<identifier>(@3 , std::move($3)));}
+	| postfix_expression INC_OP
+	{$$ = std::make_unique<postfix_incr>(@$ , std::move($1));}
+	| postfix_expression DEC_OP
+	{$$ = std::make_unique<postfix_decr>(@$ , std::move($1));}
+	| '(' type_name ')' '{' initializer_list '}'
+	{$$ = std::make_unique<cast_compound_literal>(@$ , std::move($2) , std::move($5));}
+	| '(' type_name ')' '{' initializer_list ',' '}'
+	{$$ = std::make_unique<cast_compound_literal>(@$ , std::move($2) , std::move($5));}
 	;
 
 argument_expression_list
-	: assignment_expression { $$ = new argument_expression_list(@$ , $1); }
-	| argument_expression_list ',' assignment_expression { $1->pushback($3); $$ = $1; }
+	: assignment_expression
+	{$$ = std::make_unique<argument_expression_list>(@$ , std::move($1));}
+	| argument_expression_list ',' assignment_expression
+	{$1->pushback(std::move($3)); $$ = std::move($1);}
 	
 
 unary_expression
-	: postfix_expression { $$ = $1; }
-	| INC_OP unary_expression { $$ = new unary_incr(@$ , $2); }
-	| DEC_OP unary_expression { $$ = new unary_decr(@$ , $2); }
-	| SIZEOF unary_expression { $$ = new sizeof_node(@$ , $2); }
-	| SIZEOF '(' type_name ')' { $$ = new sizeof_node_type(@$ , $3); }
-	| '&' cast_expression { $$ = new unary_addressof(@$ , $2); }
-	| '*' cast_expression { $$ = new unary_pointer_deref(@$ , $2); }
-	| '+' cast_expression { $$ = new unary_positive(@$ , $2); }
-	| '-' cast_expression { $$ = new unary_negative(@$ , $2); }
-	| '~' cast_expression { $$ = new unary_bitwise_not(@$ , $2); }
-	| '!' cast_expression { $$ = new unary_logical_not(@$ , $2); }
+	: postfix_expression
+	{$$ = std::move($1);}
+	| INC_OP unary_expression
+	{$$ = std::make_unique<unary_incr>(@$ , std::move($2));}
+	| DEC_OP unary_expression
+	{$$ = std::make_unique<unary_decr>(@$ , std::move($2));}
+	| SIZEOF unary_expression
+	{$$ = std::make_unique<sizeof_node>(@$ , std::move($2));}
+	| SIZEOF '(' type_name ')'
+	{$$ = std::make_unique<sizeof_node_type>(@$ , std::move($3));}
+	| '&' cast_expression
+	{$$ = std::make_unique<unary_addressof>(@$ , std::move($2));}
+	| '*' cast_expression
+	{$$ = std::make_unique<unary_pointer_deref>(@$ , std::move($2));}
+	| '+' cast_expression
+	{$$ = std::make_unique<unary_positive>(@$ , std::move($2));}
+	| '-' cast_expression
+	{$$ = std::make_unique<unary_negative>(@$ , std::move($2));}
+	| '~' cast_expression
+	{$$ = std::make_unique<unary_bitwise_not>(@$ , std::move($2));}
+	| '!' cast_expression
+	{$$ = std::make_unique<unary_logical_not>(@$ , std::move($2));}
 	;
 
 cast_expression
-	: unary_expression { $$ = $1; }
-	| '(' type_name ')' cast_expression { $$ = new cast_expression(@$ , $2 , $4); }
+	: unary_expression
+	{$$ = std::move($1);}
+	| '(' type_name ')' cast_expression
+	{$$ = std::make_unique<cast_expression>(@$ , std::move($2) , std::move($4));}
 	;
 
 multiplicative_expression
-	: cast_expression { $$ = $1; }
-	| multiplicative_expression '*' cast_expression {$$ = new mul(@$ , $1,$3);}
-	| multiplicative_expression '/' cast_expression {$$ = new divi(@$ , $1,$3);}
-	| multiplicative_expression '%' cast_expression {$$ = new modulo(@$ , $1,$3);}
+	: cast_expression
+	{$$ = std::move($1);}
+	| multiplicative_expression '*' cast_expression
+	{$$ = std::make_unique<mul>(@$ , std::move($1), std::move($3));}
+	| multiplicative_expression '/' cast_expression
+	{$$ = std::make_unique<divi>(@$ , std::move($1), std::move($3));}
+	| multiplicative_expression '%' cast_expression
+	{$$ = std::make_unique<modulo>(@$ , std::move($1), std::move($3));}
 	;
 
 additive_expression
-	: multiplicative_expression { $$ = $1; }
-	| additive_expression '+' multiplicative_expression {$$ = new add(@$ , $1,$3);}
-	| additive_expression '-' multiplicative_expression {$$ = new sub(@$ , $1,$3);}
+	: multiplicative_expression
+	{$$ = std::move($1);}
+	| additive_expression '+' multiplicative_expression
+	{$$ = std::make_unique<add>(@$ , std::move($1), std::move($3));}
+	| additive_expression '-' multiplicative_expression
+	{$$ = std::make_unique<sub>(@$ , std::move($1), std::move($3));}
 	;
 
 shift_expression
-	: additive_expression { $$ = $1; }
-	| shift_expression LEFT_OP additive_expression {$$ = new left_shift(@$ , $1,$3);}
-	| shift_expression RIGHT_OP additive_expression {$$ = new right_shift(@$ , $1,$3);}
+	: additive_expression
+	{$$ = std::move($1);}
+	| shift_expression LEFT_OP additive_expression
+	{$$ = std::make_unique<left_shift>(@$ , std::move($1), std::move($3));}
+	| shift_expression RIGHT_OP additive_expression
+	{$$ = std::make_unique<right_shift>(@$ , std::move($1), std::move($3));}
 	;
 
 relational_expression
-	: shift_expression { $$ = $1; }
-	| relational_expression '<' shift_expression {$$ = new less_than(@$ , $1,$3);}
-	| relational_expression '>' shift_expression {$$ = new greater_than(@$ , $1,$3);}
-	| relational_expression LE_OP shift_expression {$$ = new less_eq_than(@$ , $1,$3);}
-	| relational_expression GE_OP shift_expression {$$ = new greater_eq_than(@$ , $1,$3);}
+	: shift_expression
+	{$$ = std::move($1);}
+	| relational_expression '<' shift_expression
+	{$$ = std::make_unique<less_than>(@$ , std::move($1), std::move($3));}
+	| relational_expression '>' shift_expression
+	{$$ = std::make_unique<greater_than>(@$ , std::move($1), std::move($3));}
+	| relational_expression LE_OP shift_expression
+	{$$ = std::make_unique<less_eq_than>(@$ , std::move($1), std::move($3));}
+	| relational_expression GE_OP shift_expression
+	{$$ = std::make_unique<greater_eq_than>(@$ , std::move($1), std::move($3));}
 	;
 
 equality_expression
-	: relational_expression { $$ = $1; }
-	| equality_expression EQ_OP relational_expression {$$ = new equality(@$ , $1,$3);}
-	| equality_expression NE_OP relational_expression {$$ = new not_equal(@$ , $1,$3);}
+	: relational_expression
+	{$$ = std::move($1);}
+	| equality_expression EQ_OP relational_expression
+	{$$ = std::make_unique<equality>(@$ , std::move($1), std::move($3));}
+	| equality_expression NE_OP relational_expression
+	{$$ = std::make_unique<not_equal>(@$ , std::move($1), std::move($3));}
 	;
 
 and_expression
-	: equality_expression { $$ = $1; }
-	| and_expression '&' equality_expression {$$ = new andop(@$ , $1,$3);}
+	: equality_expression
+	{$$ = std::move($1);}
+	| and_expression '&' equality_expression
+	{$$ = std::make_unique<andop>(@$ , std::move($1), std::move($3));}
 	;
 
 exclusive_or_expression
-	: and_expression { $$ = $1; }
-	| exclusive_or_expression '^' and_expression {$$ = new xorop(@$ , $1,$3);}
+	: and_expression
+	{$$ = std::move($1);}
+	| exclusive_or_expression '^' and_expression
+	{$$ = std::make_unique<xorop>(@$ , std::move($1), std::move($3));}
 	;
 
 inclusive_or_expression
-	: exclusive_or_expression { $$ = $1; }
-	| inclusive_or_expression '|' exclusive_or_expression {$$ = new orop(@$ , $1,$3);}
+	: exclusive_or_expression
+	{$$ = std::move($1);}
+	| inclusive_or_expression '|' exclusive_or_expression
+	{$$ = std::make_unique<orop>(@$ , std::move($1), std::move($3));}
 	;
 
 logical_and_expression
-	: inclusive_or_expression { $$ = $1; }
-	| logical_and_expression AND_OP inclusive_or_expression {$$ = new log_andop(@$ , $1,$3);}
+	: inclusive_or_expression
+	{$$ = std::move($1);}
+	| logical_and_expression AND_OP inclusive_or_expression
+	{$$ = std::make_unique<log_andop>(@$ , std::move($1), std::move($3));}
 	;
 
 logical_or_expression
-	: logical_and_expression { $$ = $1; }
-	| logical_or_expression OR_OP logical_and_expression {$$ = new log_orop(@$ , $1,$3);}
+	: logical_and_expression
+	{$$ = std::move($1);}
+	| logical_or_expression OR_OP logical_and_expression
+	{$$ = std::make_unique<log_orop>(@$ , std::move($1), std::move($3));}
 	;
 
 conditional_expression
-	: logical_or_expression { $$ = $1; }
-	| logical_or_expression '?' expression ':' conditional_expression { $$ = new conditional_expression(@$ , $1 , $3 , $5); }
+	: logical_or_expression
+	{$$ = std::move($1);}
+	| logical_or_expression '?' expression ':' conditional_expression
+	{$$ = std::make_unique<conditional_expression>(@$, std::move($1), std::move($3), std::move($5));}
 	;
 
 assignment_expression
-	: conditional_expression { $$ = $1; }
-	| unary_expression '=' assignment_expression { $$ = new equals_assn(@$ , $1 , $3); }
-	| unary_expression MUL_ASSIGN assignment_expression { $$ = new mul_assn(@$ , $1 , $3); }
-	| unary_expression DIV_ASSIGN assignment_expression { $$ = new div_assn(@$ , $1 , $3); }
-	| unary_expression MOD_ASSIGN assignment_expression { $$ = new modu_assn(@$ , $1 , $3); }
-	| unary_expression ADD_ASSIGN assignment_expression { $$ = new add_assn(@$ , $1 , $3); }
-	| unary_expression SUB_ASSIGN assignment_expression { $$ = new sub_assn(@$ , $1 , $3); }
-	| unary_expression LEFT_ASSIGN assignment_expression { $$ = new left_assn(@$ , $1 , $3); }
-	| unary_expression RIGHT_ASSIGN assignment_expression { $$ = new right_assn(@$ , $1 , $3); }
-	| unary_expression AND_ASSIGN assignment_expression { $$ = new and_assn(@$ , $1 , $3); }
-	| unary_expression XOR_ASSIGN assignment_expression { $$ = new xor_assn(@$ , $1 , $3); }
-	| unary_expression OR_ASSIGN assignment_expression { $$ = new or_assn(@$ , $1 , $3); }
+	: conditional_expression
+	{$$ = std::move($1);}
+	| unary_expression '=' assignment_expression
+	{$$ = std::make_unique<equals_assn>(@$ , std::move($1) , std::move($3));}
+	| unary_expression MUL_ASSIGN assignment_expression
+	{$$ = std::make_unique<mul_assn>(@$ , std::move($1) , std::move($3));}
+	| unary_expression DIV_ASSIGN assignment_expression
+	{$$ = std::make_unique<div_assn>(@$ , std::move($1) , std::move($3));}
+	| unary_expression MOD_ASSIGN assignment_expression
+	{$$ = std::make_unique<modu_assn>(@$ , std::move($1) , std::move($3));}
+	| unary_expression ADD_ASSIGN assignment_expression
+	{$$ = std::make_unique<add_assn>(@$ , std::move($1) , std::move($3));}
+	| unary_expression SUB_ASSIGN assignment_expression
+	{$$ = std::make_unique<sub_assn>(@$ , std::move($1) , std::move($3));}
+	| unary_expression LEFT_ASSIGN assignment_expression
+	{$$ = std::make_unique<left_assn>(@$ , std::move($1) , std::move($3));}
+	| unary_expression RIGHT_ASSIGN assignment_expression
+	{$$ = std::make_unique<right_assn>(@$ , std::move($1) , std::move($3));}
+	| unary_expression AND_ASSIGN assignment_expression
+	{$$ = std::make_unique<and_assn>(@$ , std::move($1) , std::move($3));}
+	| unary_expression XOR_ASSIGN assignment_expression
+	{$$ = std::make_unique<xor_assn>(@$ , std::move($1) , std::move($3));}
+	| unary_expression OR_ASSIGN assignment_expression
+	{$$ = std::make_unique<or_assn>(@$ , std::move($1) , std::move($3));}
 	;
 
 expression
-	: assignment_expression { $$ = new expression_list(@$ , $1); }
-	| expression ',' assignment_expression { $1->pushback($3); $$ = $1; }
+	: assignment_expression
+	{$$ = std::make_unique<expression_list>(@$ , std::move($1));}
+	| expression ',' assignment_expression
+	{$1->pushback(std::move($3)); $$ = std::move($1);}
 	;
 
 constant_expression
-	: conditional_expression { $$ = $1; }
+	: conditional_expression
+	{$$ = std::move($1);}
 	;
 
 declaration
-	: declaration_specifiers ';' { $$ = new declaration(@$ , $1); }
-	| declaration_specifiers init_declarator_list ';' { $$ = new declaration_init_decl(@$ , $1 , $2); }
+	: declaration_specifiers ';'
+	{$$ = std::make_unique<declaration>(@$ , std::move($1));}
+	| declaration_specifiers init_declarator_list ';'
+	{$$ = std::make_unique<declaration_init_decl>(@$ , std::move($1) , std::move($2));}
 	;
 
 declaration_specifiers
-	: storage_class_specifier { $$ = new declaration_specifiers(@$ , $1); }
-	| storage_class_specifier declaration_specifiers { $2->pushback($1); $$ = $2; }
-	| type_specifier { $$ = new declaration_specifiers(@$ , $1); }
-	| type_specifier declaration_specifiers { $2->pushback($1); $$ = $2; }
-	| type_qualifier { $$ = new declaration_specifiers(@$ , $1); }
-	| type_qualifier declaration_specifiers { $2->pushback($1); $$ = $2; }
-	| function_specifier { $$ = new declaration_specifiers(@$ , $1); }
-	| function_specifier declaration_specifiers { $2->pushback($1); $$ = $2; }
+	: storage_class_specifier
+	{$$ = std::make_unique<declaration_specifiers>(@$ , std::move($1));}
+	| storage_class_specifier declaration_specifiers
+	{$2->pushback(std::move($1)); $$ = std::move($2);}
+	| type_specifier
+	{$$ = std::make_unique<declaration_specifiers>(@$ , std::move($1));}
+	| type_specifier declaration_specifiers
+	{$2->pushback(std::move($1)); $$ = std::move($2);}
+	| type_qualifier
+	{$$ = std::make_unique<declaration_specifiers>(@$ , std::move($1));}
+	| type_qualifier declaration_specifiers
+	{$2->pushback(std::move($1)); $$ = std::move($2);}
+	| function_specifier
+	{$$ = std::make_unique<declaration_specifiers>(@$ , std::move($1));}
+	| function_specifier declaration_specifiers
+	{$2->pushback(std::move($1)); $$ = std::move($2);}
 	;
 
 init_declarator_list
-	: init_declarator { $$ = new init_declaration_list(@$ , $1); }
-	| init_declarator_list ',' init_declarator { $1->pushback($3); $$ = $1; }
+	: init_declarator
+	{$$ = std::make_unique<init_declaration_list>(@$ , std::move($1));}
+	| init_declarator_list ',' init_declarator
+	{$1->pushback(std::move($3)); $$ = std::move($1);}
 	;
 
 init_declarator
-	: declarator { $$ = new init_declarator(@$ , $1); }
-	| declarator '=' initializer { $$ = new init_declarator_ini(@$ , $1 , $3); }
+	: declarator
+	{$$ = std::make_unique<init_declarator>(@$ , std::move($1));}
+	| declarator '=' initializer
+	{$$ = std::make_unique<init_declarator_ini>(@$ , std::move($1) , std::move($3));}
 	;
 
 storage_class_specifier
-	: TYPEDEF { $$ = new storage_class_specifier(@$ , "TYPEDEF"); }
-	| EXTERN { $$ = new storage_class_specifier(@$ , "EXTERN"); }
-	| STATIC { $$ = new storage_class_specifier(@$ , "STATIC"); }
-	| AUTO { $$ = new storage_class_specifier(@$ , "AUTO"); }
-	| REGISTER { $$ = new storage_class_specifier(@$ , "REGISTER"); }
+	: TYPEDEF
+	{$$ = std::make_unique<storage_class_specifier>(@$ , "TYPEDEF");}
+	| EXTERN
+	{$$ = std::make_unique<storage_class_specifier>(@$ , "EXTERN");}
+	| STATIC
+	{$$ = std::make_unique<storage_class_specifier>(@$ , "STATIC");}
+	| AUTO
+	{$$ = std::make_unique<storage_class_specifier>(@$ , "AUTO");}
+	| REGISTER
+	{$$ = std::make_unique<storage_class_specifier>(@$ , "REGISTER");}
 	;
 
 type_specifier
-	: VOID { $$ = new type_specifier(@$ , "VOID"); }
-	| CHAR { $$ = new type_specifier(@$ , "CHAR"); }
-	| SHORT { $$ = new type_specifier(@$ , "SHORT"); }
-	| INT { $$ = new type_specifier(@$ , "INT"); }
-	| LONG { $$ = new type_specifier(@$ , "LONG"); }
-	| FLOAT { $$ = new type_specifier(@$ , "FLOAT"); }
-	| DOUBLE { $$ = new type_specifier(@$ , "DOUBLE"); }
-	| SIGNED { $$ = new type_specifier(@$ , "SIGNED"); }
-	| UNSIGNED { $$ = new type_specifier(@$ , "UNSIGNED"); }
-	| struct_or_union_specifier { $$ = $1; }
-	| enum_specifier { $$ = $1; }
-	| TYPE_NAME { $$ = new type_specifier(@$ , *$1); delete $1; }
+	: VOID
+	{$$ = std::make_unique<type_specifier>(@$ , "VOID");}
+	| CHAR
+	{$$ = std::make_unique<type_specifier>(@$ , "CHAR");}
+	| SHORT
+	{$$ = std::make_unique<type_specifier>(@$ , "SHORT");}
+	| INT
+	{$$ = std::make_unique<type_specifier>(@$ , "INT");}
+	| LONG
+	{$$ = std::make_unique<type_specifier>(@$ , "LONG");}
+	| FLOAT
+	{$$ = std::make_unique<type_specifier>(@$ , "FLOAT");}
+	| DOUBLE
+	{$$ = std::make_unique<type_specifier>(@$ , "DOUBLE");}
+	| SIGNED
+	{$$ = std::make_unique<type_specifier>(@$ , "SIGNED");}
+	| UNSIGNED
+	{$$ = std::make_unique<type_specifier>(@$ , "UNSIGNED");}
+	| struct_or_union_specifier
+	{$$ = std::move($1);}
+	| enum_specifier
+	{$$ = std::move($1);}
+	| TYPE_NAME
+	{$$ = std::make_unique<type_specifier>(@$ , *$1); }
 	;
 
 struct_or_union_specifier
 	: struct_or_union IDENTIFIER '{' struct_declaration_list '}' 
-	{ $$ = new struct_union_spec_id_decl(@$ , $1 , new identifier(@$ , *$2) , $4); delete $2; }
+	{$$ = std::make_unique<struct_union_spec_id_decl>(@$, std::move($1), std::make_unique<identifier>(@$, std::move($2)),
+		std::move($4));}
 
-	| struct_or_union '{' struct_declaration_list '}' { $$ = new struct_union_spec_decl(@$ , $1 , $3); }
-	| struct_or_union IDENTIFIER { $$ = new struct_union_spec_id(@$ , $1 , new identifier(@$ , *$2)); delete $2; }
+	| struct_or_union '{' struct_declaration_list '}'
+	{$$ = std::make_unique<struct_union_spec_decl>(@$ , std::move($1) , std::move($3));}
+	| struct_or_union IDENTIFIER
+	{$$ = std::make_unique<struct_union_spec_id>(@$, std::move($1), std::make_unique<identifier>(@$, std::move($2)));}
 	;
 
 struct_or_union
-	: STRUCT { $$ = new struct_union(@$ , "struct"); }
-	| UNION { $$ = new struct_union(@$ , "union"); }
+	: STRUCT
+	{$$ = std::make_unique<struct_union>(@$ , "struct");}
+	| UNION
+	{$$ = std::make_unique<struct_union>(@$ , "union");}
 	;
 
 struct_declaration_list
-	: struct_declaration { $$ = new struct_declaration_list(@$ , $1); }
-	| struct_declaration_list struct_declaration { $1->pushback($2); $$ = $1; }
+	: struct_declaration
+	{$$ = std::make_unique<struct_declaration_list>(@$ , std::move($1));}
+	| struct_declaration_list struct_declaration
+	{$1->pushback(std::move($2)); $$ = std::move($1);}
 	;
 
 struct_declaration
-	: specifier_qualifier_list struct_declarator_list ';' { $$ = new struct_declaration(@$ , $1 , $2); }
+	: specifier_qualifier_list struct_declarator_list ';'
+	{$$ = std::make_unique<struct_declaration>(@$ , std::move($1) , std::move($2));}
 	;
 
 specifier_qualifier_list
-	: type_specifier specifier_qualifier_list { $2->pushback($1); $$ = $2; }
-	| type_specifier { $$ = new specifier_qualifier_list(@$ , $1); }
-	| type_qualifier specifier_qualifier_list { $2->pushback($1); $$ = $2; }
-	| type_qualifier { $$ = new specifier_qualifier_list(@$ , $1); }
+	: type_specifier specifier_qualifier_list
+	{$2->pushback(std::move($1)); $$ = std::move($2);}
+	| type_specifier
+	{$$ = std::make_unique<specifier_qualifier_list>(@$ , std::move($1));}
+	| type_qualifier specifier_qualifier_list
+	{$2->pushback(std::move($1)); $$ = std::move($2);}
+	| type_qualifier
+	{$$ = std::make_unique<specifier_qualifier_list>(@$ , std::move($1));}
 	;
 
 struct_declarator_list
-	: struct_declarator { $$ = new struct_declarator_list(@$ , $1); }
-	| struct_declarator_list ',' struct_declarator { $1->pushback($3); $$ = $1; }
+	: struct_declarator
+	{$$ = std::make_unique<struct_declarator_list>(@$ , std::move($1));}
+	| struct_declarator_list ',' struct_declarator
+	{$1->pushback(std::move($3)); $$ = std::move($1);}
 	;
 
 struct_declarator
-	: declarator { $$ = new struct_declarator(@$ , $1); }
-	| ':' constant_expression { $$ = new struct_declarator_padding(@$ , $2); }
-	| declarator ':' constant_expression { $$ = new struct_declarator_size(@$ , $1 , $3); }
+	: declarator
+	{$$ = std::make_unique<struct_declarator>(@$ , std::move($1));}
+	| ':' constant_expression
+	{$$ = std::make_unique<struct_declarator_padding>(@$ , std::move($2));}
+	| declarator ':' constant_expression
+	{$$ = std::make_unique<struct_declarator_size>(@$ , std::move($1) , std::move($3));}
 	;
 
 enum_specifier
-	: ENUM '{' enumerator_list '}' { $$ = new enum_spec(@$ , $3); }
-	| ENUM IDENTIFIER '{' enumerator_list '}' { $$ = new enum_spec_id(@$ , new identifier(@2 , *$2) , $4); delete $2; }
-	| ENUM '{' enumerator_list ',' '}' { $$ = new enum_spec(@$ , $3); }
-	| ENUM IDENTIFIER '{' enumerator_list ',' '}' { $$ = new enum_spec_id(@$ , new identifier(@2 , *$2) , $4); delete $2; }
-	| ENUM IDENTIFIER { $$ = new enum_declaration(@$ , new identifier(@2 , *$2)); delete $2; }
+	: ENUM '{' enumerator_list '}'
+	{$$ = std::make_unique<enum_spec>(@$ , std::move($3));}
+	| ENUM IDENTIFIER '{' enumerator_list '}'
+	{$$ = std::make_unique<enum_spec_id>(@$ , std::make_unique<identifier>(@2 , std::move($2)) , std::move($4));}
+	| ENUM '{' enumerator_list ',' '}'
+	{$$ = std::make_unique<enum_spec>(@$ , std::move($3));}
+	| ENUM IDENTIFIER '{' enumerator_list ',' '}'
+	{$$ = std::make_unique<enum_spec_id>(@$ , std::make_unique<identifier>(@2 , std::move($2)) , std::move($4));}
+	| ENUM IDENTIFIER
+	{$$ = std::make_unique<enum_declaration>(@$ , std::make_unique<identifier>(@2 , std::move($2)));}
 	;
 
 enumerator_list
-	: enumerator { $$ = new enumerator_list(@$ , $1); }
-	| enumerator_list ',' enumerator { $1->pushback($3); $$ = $1; }
+	: enumerator
+	{$$ = std::make_unique<enumerator_list>(@$ , std::move($1));}
+	| enumerator_list ',' enumerator
+	{$1->pushback(std::move($3)); $$ = std::move($1);}
 	;
 
 enumerator
-	: IDENTIFIER { $$ = new enumerator(@$ , new identifier(@1 , *$1) ); delete $1; }
-	| IDENTIFIER '=' constant_expression { $$ = new enumerator_const_expr(@1 , new identifier(@1 , *$1) , $3); delete $1; }
+	: IDENTIFIER
+	{$$ = std::make_unique<enumerator>(@$, std::make_unique<identifier>(@1, std::move($1)) );}
+	| IDENTIFIER '=' constant_expression
+	{$$ = std::make_unique<enumerator_const_expr>(@1, std::make_unique<identifier>(@1, std::move($1)), std::move($3));}
 	;
 
 type_qualifier
-	: CONST { $$ = new type_qualifier(@$ , "CONST"); }
-	| RESTRICT { $$ = new type_qualifier(@$ , "RESTRICT"); }
-	| VOLATILE { $$ = new type_qualifier(@$ , "VOLATILE"); }
+	: CONST
+	{$$ = std::make_unique<type_qualifier>(@$ , "CONST");}
+	| RESTRICT
+	{$$ = std::make_unique<type_qualifier>(@$ , "RESTRICT");}
+	| VOLATILE
+	{$$ = std::make_unique<type_qualifier>(@$ , "VOLATILE");}
 	;
 
 function_specifier
-	: INLINE { $$ = new function_specifier(@$ , "INLINE"); }
+	: INLINE
+	{$$ = std::make_unique<function_specifier>(@$ , "INLINE");}
 	;
 
 declarator
-	: pointer direct_declarator { $$ = new declarator_pointer(@$ , $1, $2); }
-	| direct_declarator { $$ = new declarator(@$ , $1); }
+	: pointer direct_declarator
+	{$$ = std::make_unique<declarator_pointer>(@$ , std::move($1), std::move($2));}
+	| direct_declarator
+	{$$ = std::make_unique<declarator>(@$ , std::move($1));}
 	;
 
 direct_declarator
-	: IDENTIFIER { $$ = new identifier(@$ , *$1); delete $1; }
-	| direct_declarator '[' assignment_expression ']'{ $$ = new array_definition_size(@$ , $1 , $3); }
-	| direct_declarator '[' ']' { $$ = new array_definition(@$ , $1); }
-	| direct_declarator '(' ')' { $$ = new function_declarator(@$ , $1); }
-	| direct_declarator '(' parameter_type_list ')' { $$ = new function_declarator_param(@$ , $1 , $3); }
-	| direct_declarator '(' identifier_list ')' { $$ = new function_declarator_id_list(@$ , $1 , $3); }
-
-	| '(' declarator ')' { $$ = $2; }
-
+	: IDENTIFIER
+	{$$ = std::make_unique<identifier>(@$ , std::move($1));}
+	| direct_declarator '[' assignment_expression ']'
+	{$$ = std::make_unique<array_definition_size>(@$ , std::move($1) , std::move($3));}
+	| direct_declarator '[' ']'
+	{$$ = std::make_unique<array_definition>(@$ , std::move($1));}
+	| direct_declarator '(' ')'
+	{$$ = std::make_unique<function_declarator>(@$ , std::move($1));}
+	| direct_declarator '(' parameter_type_list ')'
+	{$$ = std::make_unique<function_declarator_param>(@$ , std::move($1) , std::move($3));}
+	| direct_declarator '(' identifier_list ')'
+	{$$ = std::make_unique<function_declarator_id_list>(@$ , std::move($1) , std::move($3));}
+	| '(' declarator ')'
+	{$$ = std::move($2);}
 	| direct_declarator '[' type_qualifier_list assignment_expression ']'
-	{ $$ = new array_definition_type_qual_size(@$ , $1 , $3 , $4); }
-	| direct_declarator '[' type_qualifier_list ']' { $$ = new array_definition_type_qual(@$ , $1 , $3); }
+	{$$ = std::make_unique<array_definition_type_qual_size>(@$ , std::move($1) , std::move($3) , std::move($4));}
+	| direct_declarator '[' type_qualifier_list ']'
+	{$$ = std::make_unique<array_definition_type_qual>(@$ , std::move($1) , std::move($3));}
 	;
 
 pointer
-	: '*' { $$ = new pointer_list(@$ , new pointer(@$) ); }
-	| '*' pointer { $2->pushback( new pointer(@1) ); $$ = $2; }
-	| '*' type_qualifier_list { $$ = new pointer_list(@$ , new pointer(@1)); $$->pushback($2); }
-	| '*' type_qualifier_list pointer { $$ = new pointer_list(@$ , new pointer(@1)); $$->pushback($2); $$->pushback($3); }
+	: '*'
+	{$$ = std::make_unique<pointer_list>(@$ , std::make_unique<pointer>(@$) );}
+	| '*' pointer
+	{$2->pushback( std::make_unique<pointer>(@1) ); $$ = std::move($2);}
+	| '*' type_qualifier_list
+	{$$ = std::make_unique<pointer_list>(@$ , std::make_unique<pointer>(@1)); $$->pushback(std::move($2));}
+	| '*' type_qualifier_list pointer
+	{$$ = std::make_unique<pointer_list>(@$ , std::make_unique<pointer>(@1)); $$->pushback(std::move($2)); 
+		$$->pushback(std::move($3));}
 	;
 
 type_qualifier_list
-	: type_qualifier { $$ = new type_qualifier_list(@$ , $1); }
-	| type_qualifier_list type_qualifier { $1->pushback($2);  $$ = $1; }
+	: type_qualifier
+	{$$ = std::make_unique<type_qualifier_list>(@$ , std::move($1));}
+	| type_qualifier_list type_qualifier
+	{$1->pushback(std::move($2));  $$ = std::move($1);}
 	;
 
 
 parameter_type_list
-	: parameter_list { $$ = $1; }
-	| parameter_list ',' ELLIPSIS { $1->pushback(new ellipsis(@$)); $$ = $1; }
+	: parameter_list
+	{$$ = std::move($1);}
+	| parameter_list ',' ELLIPSIS
+	{$1->pushback(std::make_unique<ellipsis>(@$)); $$ = std::move($1);}
 	;
 
 parameter_list
-	: parameter_declaration { $$ = new parameter_list(@$ , $1); }
-	| parameter_list ',' parameter_declaration { $1->pushback($3); $$ = $1; }
+	: parameter_declaration
+	{$$ = std::make_unique<parameter_list>(@$ , std::move($1));}
+	| parameter_list ',' parameter_declaration
+	{$1->pushback(std::move($3)); $$ = std::move($1);}
 	;
 
 parameter_declaration
-	: declaration_specifiers declarator { $$ = new parameter_full_decl(@$ , $1 , $2); }
-	| declaration_specifiers { $$ = new parameter_decl(@$ , $1); /*used if only the function trace needs to be given*/}
-	| declaration_specifiers abstract_declarator { $$ = new parameter_decl_abstract(@$ , $1 , $2); }
+	: declaration_specifiers declarator
+	{$$ = std::make_unique<parameter_full_decl>(@$ , std::move($1) , std::move($2));}
+	| declaration_specifiers
+	{$$ = std::make_unique<parameter_decl>(@$ , std::move($1)); /*used if only the function trace needs to be given*/}
+	| declaration_specifiers abstract_declarator
+	{$$ = std::make_unique<parameter_decl_abstract>(@$ , std::move($1) , std::move($2));}
 	;
 
 identifier_list
-	: IDENTIFIER { $$ = new identifier_list(@$ , new identifier(@$ , *$1)); delete $1; }
-	| identifier_list ',' IDENTIFIER { $1->pushback(new identifier(@$ , *$3)); delete $3 ; $$ = $1; }
+	: IDENTIFIER
+	{$$ = std::make_unique<identifier_list>(@$ , std::make_unique<identifier>(@$ , std::move($1)));}
+	| identifier_list ',' IDENTIFIER
+	{$1->pushback(std::make_unique<identifier>(@$ , std::move($3))); $$ = std::move($1);}
 	;
 
 type_name
-	: specifier_qualifier_list { $$ = new type_name(@$ , $1); }
-	| specifier_qualifier_list abstract_declarator { $$ = new type_name_abstract(@$ , $1 , $2); }
+	: specifier_qualifier_list
+	{$$ = std::make_unique<type_name>(@$ , std::move($1));}
+	| specifier_qualifier_list abstract_declarator
+	{$$ = std::make_unique<type_name_abstract>(@$ , std::move($1) , std::move($2));}
 	;
 
 abstract_declarator
-	: pointer { $$ = $1; }
-	| direct_abstract_declarator { $$ = new abstract_declarator(@$ , $1); }
-	| pointer direct_abstract_declarator { $$ = new abstract_declarator_pointer(@$ , $1 , $2); }
+	: pointer
+	{$$ = std::move($1);}
+	| direct_abstract_declarator
+	{$$ = std::make_unique<abstract_declarator>(@$ , std::move($1));}
+	| pointer direct_abstract_declarator
+	{$$ = std::make_unique<abstract_declarator_pointer>(@$ , std::move($1) , std::move($2));}
 	;
 
 direct_abstract_declarator
-	: '[' ']' { $$ = new unamed_empty_array(@$); }
-	| '[' assignment_expression ']' { $$ = new unamed_empty_array_size(@$ , $2); }
-	| direct_abstract_declarator '[' ']' { $$ = new array_decl_abstract(@$ , $1); }
-	| direct_abstract_declarator '[' assignment_expression ']' { $$ = new array_decl_abstract_size(@$ , $1 , $3); }
-	| '(' ')' { $$ = new unamed_empty_declaration(@$); }
-	| '(' parameter_type_list ')' { $$ = new unamed_abstract_function_parameters(@$ , $2); }
-	| direct_abstract_declarator '(' ')' { $$ = new abstract_function(@$ , $1); }
-	| direct_abstract_declarator '(' parameter_type_list ')' { $$ = new abstract_function_parameters(@$ , $1 , $3); }
-	| '(' abstract_declarator ')' { $$ = $2; }
+	: '[' ']'
+	{$$ = std::make_unique<unamed_empty_array>(@$);}
+	| '[' assignment_expression ']'
+	{$$ = std::make_unique<unamed_empty_array_size>(@$ , std::move($2));}
+	| direct_abstract_declarator '[' ']'
+	{$$ = std::make_unique<array_decl_abstract>(@$ , std::move($1));}
+	| direct_abstract_declarator '[' assignment_expression ']'
+	{$$ = std::make_unique<array_decl_abstract_size>(@$ , std::move($1) , std::move($3));}
+	| '(' ')'
+	{$$ = std::make_unique<unamed_empty_declaration>(@$);}
+	| '(' parameter_type_list ')'
+	{$$ = std::make_unique<unamed_abstract_function_parameters>(@$ , std::move($2));}
+	| direct_abstract_declarator '(' ')'
+	{$$ = std::make_unique<abstract_function>(@$ , std::move($1));}
+	| direct_abstract_declarator '(' parameter_type_list ')'
+	{$$ = std::make_unique<abstract_function_parameters>(@$ , std::move($1) , std::move($3));}
+	| '(' abstract_declarator ')'
+	{$$ = std::move($2);}
 	;
 
 initializer
-	: assignment_expression { $$ = $1; }
-	| '{' initializer_list '}' { $$ = new initialiser(@$ , $2); }
-	| '{' initializer_list ',' '}' { $$ = new initialiser(@$ , $2); }
+	: assignment_expression
+	{$$ = std::move($1);}
+	| '{' initializer_list '}'
+	{$$ = std::make_unique<initialiser>(@$ , std::move($2));}
+	| '{' initializer_list ',' '}'
+	{$$ = std::make_unique<initialiser>(@$ , std::move($2));}
 	;
 
 initializer_list
-	: initializer { $$ = new initialiser_list(@$ , $1); }
-	| designation { $$ = new initialiser_list(@$ , $1); }
-	| initializer_list ',' initializer { $1->pushback($3); $$ = $1; }
-	| initializer_list ',' designation { $1->pushback($3); $$ = $1; }
+	: initializer
+	{$$ = std::make_unique<initialiser_list>(@$ , std::move($1));}
+	| designation
+	{$$ = std::make_unique<initialiser_list>(@$ , std::move($1));}
+	| initializer_list ',' initializer
+	{$1->pushback(std::move($3)); $$ = std::move($1);}
+	| initializer_list ',' designation
+	{$1->pushback(std::move($3)); $$ = std::move($1);}
 	;
 
 designation
-	: designator_list '=' initializer { $$ = new designation(@$ , $1 , $3); }
+	: designator_list '=' initializer
+	{$$ = std::make_unique<designation>(@$ , std::move($1) , std::move($3));}
 
 designator_list
-	: designator { $$ = new designator_list(@$ , $1); }
-	| designator_list designator { $1->pushback($2); $$ = $1; }
+	: designator
+	{$$ = std::make_unique<designator_list>(@$ , std::move($1));}
+	| designator_list designator
+	{$1->pushback(std::move($2)); $$ = std::move($1);}
 	;
 
 designator
-	: '[' constant_expression ']' { $$ = new designator_constant_expr(@$ , $2); }
-	| '.' IDENTIFIER { $$ = new designator_identifier(@$ , new identifier(@2 , *$2)); delete $2; }
+	: '[' constant_expression ']'
+	{$$ = std::make_unique<designator_constant_expr>(@$ , std::move($2));}
+	| '.' IDENTIFIER
+	{$$ = std::make_unique<designator_identifier>(@$ , std::make_unique<identifier>(@2 , std::move($2)));}
 	;
 
 statement
-	: labeled_statement { $$ = $1; }
-	| compound_statement { $$ = $1; }
-	| expression_statement { $$ = $1; }
-	| selection_statement { $$ = $1; }
-	| iteration_statement { $$ = $1; }
-	| jump_statement { $$ = $1; }
+	: labeled_statement
+	{$$ = std::move($1);}
+	| compound_statement
+	{$$ = std::move($1);}
+	| expression_statement
+	{$$ = std::move($1);}
+	| selection_statement
+	{$$ = std::move($1);}
+	| iteration_statement
+	{$$ = std::move($1);}
+	| jump_statement
+	{$$ = std::move($1);}
 	;
 
 labeled_statement
-	: IDENTIFIER ':' statement { $$ = new goto_target(@$ , new identifier(@$ , *$1) , $3); delete $1; }
-	| CASE constant_expression ':' statement { $$ = new case_node(@$ , $2 , $4); }
-	| DEFAULT ':' statement { $$ = new case_default_node(@$ , $3); }
+	: IDENTIFIER ':' statement
+	{$$ = std::make_unique<goto_target>(@$ , std::make_unique<identifier>(@$ , std::move($1)) , std::move($3));}
+	| CASE constant_expression ':' statement
+	{$$ = std::make_unique<case_node>(@$ , std::move($2) , std::move($4));}
+	| DEFAULT ':' statement
+	{$$ = std::make_unique<case_default_node>(@$ , std::move($3));}
 	;
 
 compound_statement
-	: '{' '}' { $$ = new empty(@$); }
-	| '{' block_item_list '}' { $$ = $2; }
+	: '{' '}'
+	{$$ = std::make_unique<empty>(@$);}
+	| '{' block_item_list '}'
+	{$$ = std::move($2);}
 	;
 
 block_item_list
-	: block_item { $$ = new block_item_list(@$ , $1); }
-	| block_item_list block_item { $1->pushback($2) ; $$ = $1; }
+	: block_item
+	{$$ = std::make_unique<block_item_list>(@$ , std::move($1));}
+	| block_item_list block_item
+	{$1->pushback(std::move($2)) ; $$ = std::move($1);}
 	;
 
 block_item
-	: declaration { $$ = $1; }
-	| statement { $$ = $1; }
+	: declaration
+	{$$ = std::move($1);}
+	| statement
+	{$$ = std::move($1);}
 	;
 
 expression_statement
-	: ';' { $$ = new empty(@$); }
-	| expression ';' { $$ = $1; }
+	: ';'
+	{$$ = std::make_unique<empty>(@$);}
+	| expression ';'
+	{$$ = std::move($1);}
 	;
 
 selection_statement
-	: IF '(' expression ')' statement { $$ = new if_node(@$ , $3 , $5); }
-	| IF '(' expression ')' statement ELSE statement { $$ = new if_else_node(@$ , $3 , $5 , $7); }
-	| SWITCH '(' expression ')' statement { $$ = new switch_node(@$ , $3 , $5); }
+	: IF '(' expression ')' statement
+	{$$ = std::make_unique<if_node>(@$ , std::move($3) , std::move($5));}
+	| IF '(' expression ')' statement ELSE statement
+	{$$ = std::make_unique<if_else_node>(@$ , std::move($3) , std::move($5) , std::move($7));}
+	| SWITCH '(' expression ')' statement 
+	{$$ = std::make_unique<switch_node>(@$ , std::move($3) , std::move($5));}
 	;
 
 iteration_statement
-	: WHILE '(' expression ')' statement { $$ = new while_node(@$ , $3 , $5); }
-	| DO statement WHILE '(' expression ')' ';' { $$ = new do_while_node(@$ , $2 , $5); }
-
-	| FOR '(' expression_statement expression_statement ')' statement { $$ = new for_node_ext(@$ , $3 , $4 , $6); }
-	| FOR '(' expression_statement expression_statement expression ')' statement { $$ = new for_node_ext_mod(@$ , $3 , $4 , $5 , $7); }
-	| FOR '(' declaration expression_statement ')' statement { $$ = new for_node(@$ , $3 , $4 , $6); }
-	| FOR '(' declaration expression_statement expression ')' statement { $$ = new for_node_mod(@$ , $3 , $4 , $5 , $7); }
+	: WHILE '(' expression ')' statement
+	{$$ = std::make_unique<while_node>(@$ , std::move($3) , std::move($5));}
+	| DO statement WHILE '(' expression ')' ';'
+	{$$ = std::make_unique<do_while_node>(@$ , std::move($2) , std::move($5));}
+	| FOR '(' expression_statement expression_statement ')' statement
+	{$$ = std::make_unique<for_node_ext>(@$ , std::move($3) , std::move($4) , std::move($6));}
+	| FOR '(' expression_statement expression_statement expression ')' statement
+	{$$ = std::make_unique<for_node_ext_mod>(@$ , std::move($3) , std::move($4) , std::move($5) , std::move($7));}
+	| FOR '(' declaration expression_statement ')' statement
+	{$$ = std::make_unique<for_node>(@$ , std::move($3) , std::move($4) , std::move($6));}
+	| FOR '(' declaration expression_statement expression ')' statement
+	{$$ = std::make_unique<for_node_mod>(@$ , std::move($3) , std::move($4) , std::move($5) , std::move($7));}
 	;
 
 jump_statement
-	: GOTO IDENTIFIER ';' { $$ = new jump_statement_goto(@$ , new identifier(@$ , *$2)); delete $2; }
-	| CONTINUE ';' { $$ = new jump_statement_continue(@$); }
-	| BREAK ';' { $$ = new jump_statement_break(@$); }
-	| RETURN ';' { $$ = new jump_statement_ret(@$); }
-	| RETURN expression ';' { $$ = new jump_statement_ret_expr(@$ , $2); }
+	: GOTO IDENTIFIER ';' 
+	{$$ = std::make_unique<jump_statement_goto>(@$ , std::make_unique<identifier>(@$ , std::move($2)));}
+	| CONTINUE ';' 
+	{$$ = std::make_unique<jump_statement_continue>(@$);}
+	| BREAK ';' 
+	{$$ = std::make_unique<jump_statement_break>(@$);}
+	| RETURN ';' 
+	{$$ = std::make_unique<jump_statement_ret>(@$);}
+	| RETURN expression ';' 
+	{$$ = std::make_unique<jump_statement_ret_expr>(@$ , std::move($2));}
 	;
 
 ROOT
-	:translation_unit { root_node = $1; }
+	:translation_unit
+	{root_node = std::move($1);}
 
 translation_unit
-	: external_declaration { $$ = new translation_unit(@$ , $1); }
-	| translation_unit external_declaration { $1->pushback($2); $$ = $1; }
+	: external_declaration
+	{$$ = std::make_unique<translation_unit>(@$ , std::move($1));}
+	| translation_unit external_declaration
+	{$1->pushback(std::move($2)); $$ = std::move($1);}
 	;
 
 external_declaration
-	: function_definition { $$ = $1; }
-	| declaration { $$ = $1; }
+	: function_definition
+	{$$ = std::move($1);}
+	| declaration
+	{$$ = std::move($1);}
 	;
 
 function_definition
-	: declaration_specifiers declarator declaration_list compound_statement { $$ = new function_definition_decl_list(@$ , $1 , $2 , $3 , $4); }
-	| declaration_specifiers declarator compound_statement { $$ = new function_definition(@$ , $1 , $2 , $3); }
+	: declaration_specifiers declarator declaration_list compound_statement 
+	{$$ = std::make_unique<function_definition_decl_list>(@$, std::move($1), std::move($2), std::move($3), std::move($4));}
+	| declaration_specifiers declarator compound_statement 
+	{$$ = std::make_unique<function_definition>(@$, std::move($1), std::move($2), std::move($3));}
 	;
 
 declaration_list
-	: declaration { $$ = new declaration_list(@$ , $1); }
-	| declaration_list declaration { $1->pushback($2); $$ = $1; }
+	: declaration
+	{$$ = std::make_unique<declaration_list>(@$ , std::move($1));}
+	| declaration_list declaration 
+	{$1->pushback(std::move($2)); $$ = std::move($1);}
 	;
 
 
@@ -528,7 +761,7 @@ void yyerror(char const *s) {
 }
 
 
-node *parseAST(std::string file_name) {
+std::unique_ptr<node> parseAST(std::string file_name) {
 
 	yyin = fopen(file_name.c_str(), "r");
 
@@ -538,7 +771,7 @@ node *parseAST(std::string file_name) {
 
 	root_node = nullptr;
 	yyparse();
-	return root_node;
+	return std::move(root_node);
 }
 
 

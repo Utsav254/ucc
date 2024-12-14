@@ -1,11 +1,14 @@
-#ifndef ENUMERATOR_HPP
-#define ENUMERATOR_HPP
-
+#pragma once
 #include "ast/node.hpp"
 
 class enumerator_list : public nodelist {
 public:
-	enumerator_list(const YYLTYPE& loc , node *first_node) : nodelist(loc , first_node){}
+	enumerator_list
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> first_node
+	):
+		nodelist(loc , std::move(first_node)){}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -13,33 +16,35 @@ public:
 
 class enumerator : public node {
 public:
-	enumerator(const YYLTYPE& loc , const node *identifier) :
-		node(loc) , identifier_(identifier) {}
-	~enumerator() {
-		if(identifier_ != nullptr) delete identifier_;
-	}
+	enumerator
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> identifier
+	):
+		node(loc) , identifier_(std::move(identifier)) {}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 protected:
-	const node *identifier_;
+	std::unique_ptr<node> identifier_;
 };
 
 class enumerator_const_expr : public enumerator {
 public:
-	enumerator_const_expr(const YYLTYPE& loc , const node *identifier , const node *const_expr) :
-		enumerator(loc , identifier) , const_expr_(const_expr) {}
-
-	~enumerator_const_expr() {
-		if(const_expr_ != nullptr) delete const_expr_;
-	}
+	enumerator_const_expr
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> identifier,
+		std::unique_ptr<node> const_expr
+	):
+		enumerator(loc , std::move(identifier)),
+		const_expr_(std::move(const_expr)) {}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	const node *const_expr_;
+	std::unique_ptr<node> const_expr_;
 };
 
-#endif

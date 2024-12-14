@@ -1,25 +1,22 @@
-#ifndef ARRAY_INDEX_HPP
-#define ARRAY_INDEX_HPP
-
+#pragma once
 #include "../node.hpp"
 
 class array_index : public node {
 public:
-	array_index(const YYLTYPE& loc , const node *postfix_expr , const node *expr) :
+	array_index
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> postfix_expr,
+		std::unique_ptr<node> expr
+	):
 		node(loc),
-		postfix_expr_(postfix_expr) , expr_(expr){}
-
-	~array_index() {
-		if(postfix_expr_ != nullptr) delete postfix_expr_;
-		if(expr_ != nullptr) delete expr_;
-	}
+		postfix_expr_(std::move(postfix_expr)) , expr_(std::move(expr)){}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	const node *postfix_expr_;
-	const node *expr_;
+	std::unique_ptr<node> postfix_expr_;
+	std::unique_ptr<node> expr_;
 };
 
-#endif

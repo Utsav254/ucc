@@ -1,6 +1,4 @@
-#ifndef LOCATIONS_HPP
-#define LOCATIONS_HPP
-
+#pragma once
 struct YYLTYPE {
 	int first_column;
 	int last_column;
@@ -11,5 +9,3 @@ struct YYLTYPE {
 	YYLTYPE(int fc , int lc , int fl , int ll) : first_column(fc) , last_column(lc) , first_line(fl) , last_line(ll) {}
 
 };
-
-#endif

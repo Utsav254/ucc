@@ -1,6 +1,4 @@
-#ifndef MISC_HPP
-#define MISC_HPP
-
+#pragma once
 #include "../node.hpp"
 
 class empty : public node {
@@ -24,41 +22,45 @@ public:
 
 class sizeof_node : public node {
 public:
-	sizeof_node(const YYLTYPE& loc , const node *unary_expression) :
-		node(loc),
-		unary_expression_(unary_expression){}
-
-	~sizeof_node() {
-		if(unary_expression_ != nullptr) delete unary_expression_;
-	}
+	sizeof_node
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> unary_expression
+	):
+		node(loc), unary_expression_(std::move(unary_expression)){}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	const node *unary_expression_;
+	std::unique_ptr<node> unary_expression_;
 };
 
 class sizeof_node_type : public node {
 public:
-	sizeof_node_type(const YYLTYPE& loc , const node *type_name) :
+	sizeof_node_type
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> type_name
+	):
 		node(loc),
-		type_name_(type_name){}
-
-	~sizeof_node_type() {
-		if(type_name_ != nullptr) delete type_name_;
-	}
+		type_name_(std::move(type_name)){}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	const node *type_name_;
+	std::unique_ptr<node> type_name_;
 };
 
 class translation_unit : public nodelist {
 public:
-	translation_unit(const YYLTYPE& loc , node *first_node) : nodelist(loc , first_node){}
+	translation_unit
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> first_node
+	):
+		nodelist(loc , std::move(first_node)){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -66,11 +68,13 @@ public:
 
 class unamed_empty_declaration : public node {
 public:
-	unamed_empty_declaration(const YYLTYPE& loc) :
+	unamed_empty_declaration
+	(
+		const YYLTYPE& loc
+	):
 		node(loc) {}
 
 	void generateIR() const override;	
 	void printAST(int depth) const override;
 };
 
-#endif

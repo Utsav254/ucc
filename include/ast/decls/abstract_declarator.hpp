@@ -1,40 +1,38 @@
-#ifndef ABSTRACT_DECLARATOR_HPP
-#define ABSTRACT_DECLARATOR_HPP
-
+#pragma once
 #include "ast/node.hpp"
 
 class abstract_declarator : public node {
 public:
-	abstract_declarator(const YYLTYPE& loc , const node *abstract_direct_decl) : 
-		node(loc) , abstract_direct_decl_(abstract_direct_decl) {}
-
-	~abstract_declarator() {
-		if(abstract_direct_decl_ != nullptr) delete abstract_direct_decl_;
-	}
+	abstract_declarator
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> abstract_direct_decl
+	): 
+		node(loc) , abstract_direct_decl_(std::move(abstract_direct_decl)) {}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 protected:
-	const node *abstract_direct_decl_;
+	std::unique_ptr<node> abstract_direct_decl_;
 };
 
 
 class abstract_declarator_pointer : public abstract_declarator {
 public:
-	abstract_declarator_pointer(const YYLTYPE& loc , const nodelist *pointer , const node *abstract_direct_decl) : 
-		abstract_declarator(loc , abstract_direct_decl) , pointer_(pointer) {}
-
-	~abstract_declarator_pointer() {
-		if(pointer_ != nullptr) delete pointer_;
-	}
+	abstract_declarator_pointer
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> pointer,
+		std::unique_ptr<node> abstract_direct_decl
+	): 
+		abstract_declarator(loc , std::move(abstract_direct_decl)),
+		pointer_(std::move(pointer)) {}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	const nodelist *pointer_;
+	std::unique_ptr<node> pointer_;
 };
 
-
-#endif

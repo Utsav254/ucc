@@ -78,28 +78,28 @@ IS  ((u|U)|(u|U)?(l|L|ll|LL)|(l|L|ll|LL)(u|U))
 "volatile"		{ prev = VOLATILE;  return(VOLATILE); }
 "while"			{ prev = WHILE; return(WHILE); }
 
-{L}({L}|{D})*		{ yylval.string = new std::string(yytext); return(check_type(yytext)); }
+{L}({L}|{D})*		{ yylval = std::make_unique<std::string>(yytext); return(check_type(yytext)); }
 
-0[xX]{H}+{IS}?		{ prev = INT_CONSTANT; yylval.number_int = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
-0[0-7]*{IS}?		{ prev = INT_CONSTANT; yylval.number_int = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
-[1-9]{D}*{IS}?		{ prev = INT_CONSTANT; yylval.number_int = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
-L?'(\\.|[^\\'\n])+'	{ prev = CHAR_CONSTANT; yylval.letter_char = extract_char_value(yytext); return(CHAR_CONSTANT); }
+0[xX]{H}+{IS}?		{ prev = INT_CONSTANT; yylval = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
+0[0-7]*{IS}?		{ prev = INT_CONSTANT; yylval = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
+[1-9]{D}*{IS}?		{ prev = INT_CONSTANT; yylval = (int)strtol(yytext , NULL , 0); return(INT_CONSTANT); }
+L?'(\\.|[^\\'\n])+'	{ prev = CHAR_CONSTANT; yylval = extract_char_value(yytext); return(CHAR_CONSTANT); }
 
-{D}+{E}{FS}?		{ prev = FLOAT_CONSTANT; yylval.number_float = strtod(yytext, NULL); return(FLOAT_CONSTANT); }
-{D}*"."{D}+{E}?{FS}?	{ prev = FLOAT_CONSTANT; yylval.number_float = strtod(yytext , NULL); return(FLOAT_CONSTANT); }
-{D}+"."{D}*{E}?{FS}?	{ prev = FLOAT_CONSTANT; yylval.number_float = strtod(yytext , NULL); return(FLOAT_CONSTANT); }
+{D}+{E}{FS}?		{ prev = FLOAT_CONSTANT; yylval = strtod(yytext, NULL); return(FLOAT_CONSTANT); }
+{D}*"."{D}+{E}?{FS}?	{ prev = FLOAT_CONSTANT; yylval = strtod(yytext , NULL); return(FLOAT_CONSTANT); }
+{D}+"."{D}*{E}?{FS}?	{ prev = FLOAT_CONSTANT; yylval = strtod(yytext , NULL); return(FLOAT_CONSTANT); }
 
 0[xX]{H}+{P}{FS}?	{ errors::die("does not handle hex floating constants yet");}
 0[xX]{H}*"."{H}+{P}?{FS}?     { errors::die("does not handle hex floating constants yet");}
 0[xX]{H}+"."{H}*{P}?{FS}?     { errors::die("does not handle hex floating constants yet");}
 
 
-L?\"(\\.|[^\\"\n])*\"	{ prev = STRING_LITERAL; yylval.string = new std::string(yytext); return(STRING_LITERAL); }
+L?\"(\\.|[^\\"\n])*\"	{ prev = STRING_LITERAL; yylval = std::make_unique<std::string>(yytext);return(STRING_LITERAL);}
 
 L?\"[^\"\n]*$			{	
 							prev = STRING_LITERAL;
 							errors::add_err(new error(yylloc , "unterminated string" , true)); 
-							yylval.string = new std::string(yytext); 
+							yylval = std::make_unique<std::string>(yytext); 
 							return(STRING_LITERAL); 
 						}
 

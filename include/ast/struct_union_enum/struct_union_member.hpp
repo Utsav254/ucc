@@ -1,13 +1,14 @@
-#ifndef STRUCT_UNION_MEMBER_HPP
-#define STRUCT_UNION_MEMBER_HPP
-
+#pragma once
 #include "../node.hpp"
-
-//declaration members
 
 class specifier_qualifier_list : public nodelist {
 public:
-	specifier_qualifier_list(const YYLTYPE& loc , node *first_node) : nodelist(loc , first_node){}
+	specifier_qualifier_list
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> first_node
+	):
+		nodelist(loc , std::move(first_node)){}
 	
 	void printAST(int depth) const override;
 };
@@ -15,24 +16,29 @@ public:
 //virtual class for referencing
 class member_op : public node {
 public:
-	member_op(const YYLTYPE& loc , const node *postfix_expression , const node *identifier) :
+	member_op
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> postfix_expression,
+		std::unique_ptr<node> identifier
+	):
 		node(loc),
-		postfix_expression_(postfix_expression) , identifier_(identifier){}
-
-	~member_op() {
-		if(postfix_expression_ != nullptr) delete postfix_expression_;
-		if(identifier_ != nullptr) delete identifier_;
-	}
+		postfix_expression_(std::move(postfix_expression)) , identifier_(std::move(identifier)){}
 
 protected:
-	const node *postfix_expression_;
-	const node *identifier_;
+	std::unique_ptr<node> postfix_expression_;
+	std::unique_ptr<node> identifier_;
 };
 
 class dot_member_op : public member_op {
 public:
-	dot_member_op(const YYLTYPE& loc , const node *postfix_expression , const node *identifier) :
-		member_op(loc , postfix_expression , identifier){}
+	dot_member_op
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> postfix_expression,
+		std::unique_ptr<node> identifier
+	):
+		member_op(loc , std::move(postfix_expression) , std::move(identifier)){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -40,13 +46,15 @@ public:
 
 class ptr_member_op : public member_op {
 public:
-	ptr_member_op(const YYLTYPE& loc , const node *postfix_expression , const node *identifier) :
-		member_op(loc , postfix_expression , identifier){}
+	ptr_member_op
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> postfix_expression,
+		std::unique_ptr<node> identifier
+	):
+		member_op(loc, std::move(postfix_expression), std::move(identifier)){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
 };
-
-
-#endif
 

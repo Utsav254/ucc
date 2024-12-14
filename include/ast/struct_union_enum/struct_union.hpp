@@ -1,11 +1,12 @@
-#ifndef STRUCT_UNION_HPP
-#define STRUCT_UNION_HPP
-
+#pragma once
 #include "../node.hpp"
 
 class struct_union : public node {
 public:
-	struct_union(const YYLTYPE& loc , const std::string su) :
+	struct_union
+	(
+		const YYLTYPE& loc,
+		const std::string& su) :
 		node(loc),
 		su_(su){}
 
@@ -21,66 +22,70 @@ private:
 //purely virtual class
 class struct_union_spec : public node {
 public:
-	struct_union_spec(const YYLTYPE& loc , const node *struct_union) :
+	struct_union_spec
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> struct_union
+	):
 		node(loc),
-		struct_union_(struct_union){}
-
-	~struct_union_spec() {
-		if(struct_union_ != nullptr) delete struct_union_;
-	}
+		struct_union_(std::move(struct_union)){}
 
 protected:
-	const node *struct_union_;
+	std::unique_ptr<node> struct_union_;
 };
-
 
 class struct_union_spec_id : public struct_union_spec {
 public:
-	struct_union_spec_id(const YYLTYPE& loc , const node *struct_union , const node *identifier) :
-		struct_union_spec(loc , struct_union) , identifier_(identifier){}
-
-	~struct_union_spec_id() {
-		if(identifier_ != nullptr) delete identifier_;
-	}
+	struct_union_spec_id
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> struct_union,
+		std::unique_ptr<node> identifier
+	):
+		struct_union_spec(loc , std::move(struct_union)),
+		identifier_(std::move(identifier)){}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 protected:
-	const node *identifier_;
+	std::unique_ptr<node> identifier_;
 };
 
 class struct_union_spec_id_decl : public struct_union_spec_id {
 public:
-	struct_union_spec_id_decl(const YYLTYPE& loc , const node *struct_union , const node *identifier , const nodelist *struct_decl_list) : 
-		struct_union_spec_id(loc , struct_union , identifier),
-		struct_decl_list_(struct_decl_list){}
-
-	~struct_union_spec_id_decl() {
-		if(struct_decl_list_ != nullptr) delete struct_decl_list_;
-	}
+	struct_union_spec_id_decl
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> struct_union,
+		std::unique_ptr<node> identifier,
+		std::unique_ptr<nodelist> struct_decl_list
+	): 
+		struct_union_spec_id(loc, std::move(struct_union), std::move(identifier)),
+		struct_decl_list_(std::move(struct_decl_list)){}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	const nodelist *struct_decl_list_;
+	std::unique_ptr<nodelist> struct_decl_list_;
 };
 
 class struct_union_spec_decl : public struct_union_spec {
 public:
-	struct_union_spec_decl(const YYLTYPE& loc , const node *struct_union , const nodelist *struct_decl_list) :	
-		struct_union_spec(loc , struct_union) , struct_decl_list_(struct_decl_list){}
-	~struct_union_spec_decl() {
-		if(struct_decl_list_ != nullptr) delete struct_decl_list_;
-	}
+	struct_union_spec_decl
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> struct_union,
+		std::unique_ptr<nodelist> struct_decl_list
+	):	
+		struct_union_spec(loc , std::move(struct_union)),
+		struct_decl_list_(std::move(struct_decl_list)){}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	const nodelist *struct_decl_list_;
+	std::unique_ptr<nodelist> struct_decl_list_;
 };
-
-#endif
 

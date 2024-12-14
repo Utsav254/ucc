@@ -7,7 +7,7 @@
 #include "ast/node.hpp"
 
 //global pointers to structures
-node *root_node;
+std::unique_ptr<node> root_node;
 IR *ir;
 
 int main(int argc , char **argv) {
@@ -23,7 +23,7 @@ int main(int argc , char **argv) {
 	if(!output.is_open()) errors::die("Failed to open output file");
 
 	//lex and parse the source code
-	node *ast_root = parseAST(cliargs.sourcepath);
+	std::unique_ptr<node> ast_root = parseAST(cliargs.sourcepath);
 	if(ast_root == nullptr) errors::die("Fatal parsing failure: parse tree does not exist");
 
 	//temporarily print the ast to the console for debugging use

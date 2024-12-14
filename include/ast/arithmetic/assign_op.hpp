@@ -1,29 +1,31 @@
-#ifndef ASSIGN_OP_HPP
-#define ASSIGN_OP_HPP
-
+#pragma once
 #include "../node.hpp"
 
 class assn_op : public node {
 public:
-	assn_op(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression):
+	assn_op
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> unary_expression , 
+		std::unique_ptr<node> assignment_expression
+	):
 		node(loc),
-		unary_expression_(unary_expression),
-		assignment_expression_(assignment_expression) {}
-
-	~assn_op() {
-		if(unary_expression_ != nullptr) delete unary_expression_;
-		if(assignment_expression_ != nullptr) delete assignment_expression_;
-	}
+		unary_expression_(std::move(unary_expression)),
+		assignment_expression_(std::move(assignment_expression)) {}
 
 protected: 
-	const node *unary_expression_;
-	const node *assignment_expression_;
+	std::unique_ptr<node> unary_expression_;
+	std::unique_ptr<node> assignment_expression_;
 };
 
 class equals_assn : public assn_op {
 public:
-	equals_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
-		assn_op(loc , unary_expression , assignment_expression){}
+	equals_assn
+	(
+		const YYLTYPE& loc , std::unique_ptr<node> unary_expression,
+		std::unique_ptr<node> assignment_expression
+	): 
+		assn_op(loc , std::move(unary_expression) , std::move(assignment_expression)){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -31,8 +33,13 @@ public:
 
 class mul_assn : public assn_op {
 public:
-	mul_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
-		assn_op(loc , unary_expression , assignment_expression){}
+	mul_assn
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> unary_expression,
+		std::unique_ptr<node> assignment_expression
+	):
+		assn_op(loc , std::move(unary_expression) , std::move(assignment_expression)){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -40,8 +47,13 @@ public:
 
 class div_assn : public assn_op {
 public:
-	div_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
-		assn_op(loc , unary_expression , assignment_expression){}
+	div_assn
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> unary_expression,
+		std::unique_ptr<node> assignment_expression
+	): 
+		assn_op(loc , std::move(unary_expression) , std::move(assignment_expression)){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -49,8 +61,13 @@ public:
 
 class modu_assn : public assn_op {
 public:
-	modu_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
-		assn_op(loc , unary_expression , assignment_expression){}
+	modu_assn
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> unary_expression,
+		std::unique_ptr<node> assignment_expression
+	):
+		assn_op(loc , std::move(unary_expression) , std::move(assignment_expression)){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -58,8 +75,12 @@ public:
 
 class add_assn : public assn_op {
 public:
-	add_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
-		assn_op(loc , unary_expression , assignment_expression){}
+	add_assn(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> unary_expression,
+		std::unique_ptr<node> assignment_expression
+	): 
+		assn_op(loc , std::move(unary_expression) , std::move(assignment_expression)){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -67,8 +88,13 @@ public:
 
 class sub_assn : public assn_op {
 public:
-	sub_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
-		assn_op(loc , unary_expression , assignment_expression){}
+	sub_assn
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> unary_expression,
+		std::unique_ptr<node> assignment_expression
+	): 
+		assn_op(loc , std::move(unary_expression) , std::move(assignment_expression)){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -76,8 +102,13 @@ public:
 
 class left_assn : public assn_op {
 public:
-	left_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
-		assn_op(loc , unary_expression , assignment_expression){}
+	left_assn
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> unary_expression,
+		std::unique_ptr<node> assignment_expression
+	): 
+		assn_op(loc , std::move(unary_expression) , std::move(assignment_expression)){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -85,8 +116,13 @@ public:
 
 class right_assn : public assn_op {
 public:
-	right_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
-		assn_op(loc , unary_expression , assignment_expression){}
+	right_assn
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> unary_expression,
+		std::unique_ptr<node> assignment_expression
+	): 
+		assn_op(loc , std::move(unary_expression) , std::move(assignment_expression)){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -94,8 +130,13 @@ public:
 
 class and_assn : public assn_op {
 public:
-	and_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
-		assn_op(loc , unary_expression , assignment_expression){}
+	and_assn
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> unary_expression,
+		std::unique_ptr<node> assignment_expression
+	): 
+		assn_op(loc , std::move(unary_expression) , std::move(assignment_expression)){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -103,8 +144,13 @@ public:
 
 class xor_assn : public assn_op {
 public:
-	xor_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
-		assn_op(loc , unary_expression , assignment_expression){}
+	xor_assn
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> unary_expression,
+		std::unique_ptr<node> assignment_expression
+	): 
+		assn_op(loc , std::move(unary_expression) , std::move(assignment_expression)){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -112,8 +158,13 @@ public:
 
 class or_assn : public assn_op {
 public:
-	or_assn(const YYLTYPE& loc , const node *unary_expression , const node *assignment_expression) : 
-		assn_op(loc , unary_expression , assignment_expression){}
+	or_assn
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> unary_expression,
+		std::unique_ptr<node> assignment_expression
+	): 
+		assn_op(loc , std::move(unary_expression) , std::move(assignment_expression)){}
 	
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -121,10 +172,13 @@ public:
 
 class expression_list: public nodelist {
 public:
-	expression_list(const YYLTYPE& loc , node *first_node) : nodelist(loc , first_node){}
+	expression_list
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> first_node
+	):
+		nodelist(loc , std::move(first_node)){}
 	
 	void printAST(int depth) const override;
 };
-
-#endif
 

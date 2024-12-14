@@ -1,17 +1,15 @@
-#ifndef DECLARATOR_HPP
-#define DECLARATOR_HPP
-
+#pragma once
 #include "../node.hpp"
 
 class declarator : public node {
 public:
-	declarator(const YYLTYPE&loc , const node *direct_declarator) :
+	declarator
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> direct_declarator
+	):
 		node(loc),
-		direct_declarator_(direct_declarator) {}
-
-	~declarator() {
-		if(direct_declarator_ != nullptr) delete direct_declarator_;
-	}
+		direct_declarator_(std::move(direct_declarator)) {}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -21,18 +19,18 @@ public:
 	}
 
 protected: 
-	const node *direct_declarator_;
+	std::unique_ptr<node> direct_declarator_;
 };
 
 class init_declarator : public node {
 public:
-	init_declarator(const YYLTYPE&loc , const node *declarator) :
+	init_declarator
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> declarator
+	):
 		node(loc),
-		declarator_(declarator) {}
-
-	~init_declarator() {
-		if(declarator_ != nullptr) delete declarator_;
-	}
+		declarator_(std::move(declarator)) {}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -42,25 +40,25 @@ public:
 	}
 
 protected: 
-	const node *declarator_;
+	std::unique_ptr<node> declarator_;
 };
 
 class init_declarator_ini : public init_declarator {
 public:
-	init_declarator_ini(const YYLTYPE&loc , const node *declarator , const node *initialiser) : 
-		init_declarator(loc , declarator) , initialiser_(initialiser) {}
-
-	~init_declarator_ini() {
-		if(initialiser_ != nullptr) delete initialiser_;
-	}
+	init_declarator_ini
+	(
+		const YYLTYPE& loc,
+		std::unique_ptr<node> declarator,
+		std::unique_ptr<node> initialiser
+	): 
+		init_declarator(loc , std::move(declarator)),
+		initialiser_(std::move(initialiser)) {}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	const node *initialiser_;
+	std::unique_ptr<node> initialiser_;
 };
 
 
-
-#endif

@@ -1,18 +1,16 @@
-#ifndef FUNCTION_DECLERATOR_HPP
-#define FUNCTION_DECLERATOR_HPP
-
+#pragma once
 #include "../node.hpp"
 
 class function_declarator : public node {
 public:
 
-	function_declarator(const YYLTYPE&loc , const node *direct_declarator) : 
+	function_declarator
+	(
+		const YYLTYPE&loc,
+		std::unique_ptr<node> direct_declarator
+	): 
 		node(loc),
-		direct_declarator_(direct_declarator){}
-
-	~function_declarator() {
-		if(direct_declarator_ != nullptr) delete direct_declarator_;
-	}
+		direct_declarator_(std::move(direct_declarator)){}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
@@ -23,42 +21,44 @@ public:
 	}
 
 protected:
-	const node *direct_declarator_;
+	std::unique_ptr<node> direct_declarator_;
 };
-
 
 class function_declarator_param : public function_declarator {
 public:
 
-	function_declarator_param(const YYLTYPE&loc , const node* direct_declarator, const nodelist* parameter_list) :
-		function_declarator(loc , direct_declarator) , parameter_list_(parameter_list) {}
-
-	~function_declarator_param() {
-		if(parameter_list_ != nullptr) delete parameter_list_;
-	}
+	function_declarator_param
+	(
+		const YYLTYPE&loc,
+		std::unique_ptr<node>  direct_declarator,
+		std::unique_ptr<node>  parameter_list
+	):
+		function_declarator(loc , std::move(direct_declarator)),
+		parameter_list_(std::move(parameter_list)) {}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	const nodelist *parameter_list_;
+	std::unique_ptr<node> parameter_list_;
 };
 
 class function_declarator_id_list : public function_declarator {
 public:
 
-	function_declarator_id_list(const YYLTYPE&loc , const node* direct_declarator, const nodelist* identifier_list) :
-		function_declarator(loc , direct_declarator) , identifier_list_(identifier_list) {}
-
-	~function_declarator_id_list() {
-		if(identifier_list_ != nullptr) delete identifier_list_;
-	}
+	function_declarator_id_list
+	(
+		const YYLTYPE&loc,
+		std::unique_ptr<node>  direct_declarator,
+		std::unique_ptr<node>  identifier_list
+	):
+		function_declarator(loc , std::move(direct_declarator)),
+		identifier_list_(std::move(identifier_list)) {}
 
 	void generateIR() const override;
 	void printAST(int depth) const override;
 
 private:
-	const nodelist *identifier_list_;
+	std::unique_ptr<node> identifier_list_;
 };
 
-#endif
